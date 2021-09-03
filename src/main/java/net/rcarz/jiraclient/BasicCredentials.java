@@ -61,6 +61,15 @@ public class BasicCredentials implements ICredentials {
     public String getLogonName() {
         return username;
     }
+
+    /**
+     * Provides the password.
+     *
+     * @return password as string
+     */
+    public String getPassword() {
+        return password;
+    }
     
     public void initialize(RestClient client) throws JiraException {
     }

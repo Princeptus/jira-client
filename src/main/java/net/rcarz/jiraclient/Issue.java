@@ -560,7 +560,6 @@ public class Issue extends Resource {
             this.startAt = startAt;
         }
         
-        @Override
         public boolean hasNext() {
             if (nextIssue != null) {
                 return true;
@@ -573,7 +572,6 @@ public class Issue extends Resource {
             return nextIssue != null;
         }
 
-        @Override
         public Issue next() {
             if (! hasNext()) {
                 throw new NoSuchElementException();
@@ -583,7 +581,6 @@ public class Issue extends Resource {
             return result;
         }
 
-        @Override
         public void remove() {
             throw new UnsupportedOperationException("Method remove() not support for class " +
                                                     this.getClass().getName());
@@ -852,6 +849,18 @@ public class Issue extends Resource {
         updatedDate = Field.getDateTime(fields.get(Field.UPDATED_DATE));
         security = Field.getResource(Security.class, fields.get(Field.SECURITY), restclient);
     }
+    
+    /**
+     * Provides the user of a specific user issue field.
+     * 
+     * @param fieldname
+     *        Name of the issue field containing a user.
+     * @return User or null, if not found.
+     */
+    public User getUser(String fieldname)
+    {
+    	return Field.getResource(User.class, fields.get(fieldname), restclient);
+    }
 
     private static String getRestUri(String key) {
         return getBaseUri() + "issue/" + (key != null ? key : "");
@@ -1086,31 +1095,47 @@ public class Issue extends Resource {
    * Adds {@link WorkLog} to this issue
    * @param comment provided comment
    * @param startDate provided start date
-   * @param timeSpentSeconds provided time spent. This cannot be lower than 1m inute
+   * @param timeSpentSeconds provided time spent. This cannot be lower than 1 minute
    * @return
    * @throws JiraException when worklog creation fails
    */
     public WorkLog addWorkLog(String comment, DateTime startDate, long timeSpentSeconds) throws JiraException {
-        try {
-            if (comment == null)
-                throw new IllegalArgumentException("Invalid comment.");
-            if (startDate == null)
-                throw new IllegalArgumentException("Invalid start time.");
-            if (timeSpentSeconds < 60) // We do not add a worklog that duration is below a minute
-                throw new IllegalArgumentException("Time spent cannot be lower than 1 minute.");
-
-            JSONObject req = new JSONObject();
-            req.put("comment", comment);
-            req.put("started", DateTimeFormat.forPattern(Field.DATETIME_FORMAT).print(startDate.getMillis()));
-            req.put("timeSpent", WorklogUtils.formatDurationFromSeconds(timeSpentSeconds));
-
-            JSON result = restclient.post(getRestUri(key) + "/worklog", req);
-            JSONObject jo = (JSONObject) result;
-            return new WorkLog(restclient, jo);
-        } catch (Exception ex) {
-            throw new JiraException("Failed add worklog to issue " + key, ex);
-        }
+    	if (timeSpentSeconds < 60) // We do not add a worklog that duration is below a minute
+            throw new JiraException("Failed add worklog to issue " + key + " Time spent cannot be lower than 1 minute.");
+    	
+    	return addWorkLog(comment, startDate, WorklogUtils.formatDurationFromSeconds(timeSpentSeconds));
     }
+    
+    /**
+     * Adds {@link WorkLog} to this issue
+     * @param comment provided comment
+     * @param startDate provided start date
+     * @param timeSpent provided time spent. This cannot be lower than 1 minute
+     * @return
+     * @throws JiraException when worklog creation fails
+     */
+      public WorkLog addWorkLog(String comment, DateTime startDate, String timeSpent) throws JiraException {
+          try {
+              if (comment == null)
+                  throw new IllegalArgumentException("Invalid comment.");
+              if (startDate == null)
+                  throw new IllegalArgumentException("Invalid start time.");
+
+              JSONObject req = new JSONObject();
+              req.put("comment", comment);
+              Date date = new Date();
+              date.setTime(startDate.getMillis());
+              req.put("started", new SimpleDateFormat(Field.DATETIME_FORMAT).format(date));
+              //req.put("started", DateTimeFormat.forPattern(Field.DATETIME_FORMAT).print(startDate.getMillis()));
+              req.put("timeSpent", timeSpent);
+
+              JSON result = restclient.post(getRestUri(key) + "/worklog", req);
+              JSONObject jo = (JSONObject) result;
+              return new WorkLog(restclient, jo);
+          } catch (Exception ex) {
+              throw new JiraException("Failed add worklog to issue " + key, ex);
+          }
+      }
 
     /**
      * Links this issue with another issue.
@@ -1445,6 +1470,18 @@ public class Issue extends Resource {
     public Object getField(String name) {
 
         return fields != null ? fields.get(name) : null;
+    }
+    
+    /**
+     * Checks whether a specific issue field exists for the issue.
+     * 
+     * @param fieldName
+     * Name of the issue field to be checked.
+     * @return true, when the field exists, false otherwise.
+     */
+    public boolean hasField(String fieldName)
+    {
+    	return fields.containsKey(fieldName);
     }
 
     /**

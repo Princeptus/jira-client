@@ -71,11 +71,14 @@ public class TimeTracking {
         if (remainingEstimate != null)
             object.put("remainingEstimate", remainingEstimate);
 
-        if (originalEstimateSeconds >= 0)
+        if (originalEstimateSeconds != null && originalEstimateSeconds.intValue() >= 0)
             object.put("originalEstimateSeconds", originalEstimateSeconds);
 
-        if (remainingEstimateSeconds >= 0)
+        if (remainingEstimateSeconds != null && remainingEstimateSeconds.intValue() >= 0)
             object.put("remainingEstimateSeconds", remainingEstimateSeconds);
+        
+        if (timeSpent != null)
+        	object.put("timeSpent", timeSpent);
 
         return object;
     }
@@ -108,15 +111,23 @@ public class TimeTracking {
         this.remainingEstimate = remainingEstimate;
     }
 
-    public void setOrignalEstimateSeconds(int originalEstimateSeconds) {
+    public void setOrignalEstimateSeconds(Integer originalEstimateSeconds) {
         this.originalEstimateSeconds = originalEstimateSeconds;
     }
 
-    public void setRemainingEstimateSeconds(int remainingEstimateSeconds) {
+    public void setRemainingEstimateSeconds(Integer remainingEstimateSeconds) {
         this.remainingEstimateSeconds = remainingEstimateSeconds;
     }
 
     public int getTimeSpentSeconds() {
         return timeSpentSeconds;
+    }
+    
+    public void setTimeSpent(String timeSpent) {
+    	this.timeSpent = timeSpent;
+    }
+    
+    public void setTimeSpentSeconds(Integer timeSpentSeconds) {
+    	this.timeSpentSeconds = timeSpentSeconds;
     }
 }

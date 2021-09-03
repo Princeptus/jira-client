@@ -24,6 +24,7 @@ import java.util.Map;
 
 import net.rcarz.jiraclient.Issue.FluentCreate;
 import net.sf.json.JSON;
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 /**
@@ -182,6 +183,42 @@ public class Component extends Resource {
             throw new JiraException("JSON payload is malformed");
 
         return new Component(restclient, (JSONObject)result);
+    }
+    
+    /**
+     * Creates a map with all components of a specific Jira project.
+     * 
+     * @param restClient
+     * REST API interface
+     * @param projectKey
+     * Key of the project whose components shall be determined.
+     * @return Map of all component strings to their component ID.<br>
+     * (Key: component name; Value: component ID)
+     * @throws JiraException when the retrieval fails
+     */
+    public static HashMap<String, String> getComponentIdMap(RestClient restClient, String projectKey) throws JiraException
+    {
+    	JSON result = null;
+
+        try {
+            result = restClient.get(String.format("%sproject/%s/components", getBaseUri(), projectKey));
+        } catch (Exception exc) {
+            throw new JiraException(String.format("Failed to retrieve component list for project %s.", projectKey), exc);
+        }
+        
+        HashMap<String, String> componentIdMap = new HashMap<String, String>();
+        
+        if (result instanceof JSONArray) {
+        	JSONArray jsonArray = (JSONArray) result;
+        	for (int entryIndex = 0; entryIndex < jsonArray.size(); ++entryIndex) {
+        		JSONObject entry = jsonArray.getJSONObject(entryIndex);
+        		final String componentName = entry.getString("name");
+        		final String componentId = entry.getString("id");
+        		componentIdMap.put(componentName, componentId);
+        	}
+        }
+        
+        return componentIdMap;
     }
 
     @Override

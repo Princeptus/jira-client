@@ -52,6 +52,7 @@ import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.charset.UnsupportedCharsetException;
 import java.util.Map;
 
 /**
@@ -182,7 +183,7 @@ public class RestClient {
             try {
                 ent = new StringEntity(payload, "UTF-8");
                 ent.setContentType("application/json");
-            } catch (UnsupportedEncodingException ex) {
+            } catch (UnsupportedCharsetException ex) {
                 /* utf-8 should always be supported... */
             }
 

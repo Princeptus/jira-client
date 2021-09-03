@@ -20,11 +20,13 @@
 package net.rcarz.jiraclient;
 
 import net.sf.json.JSON;
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -223,6 +225,42 @@ public class Version extends Resource {
             throw new JiraException("JSON payload is malformed");
 
         return new Version(restclient, (JSONObject) result);
+    }
+    
+    /**
+     * Creates a map with all versions of a specific Jira project.
+     * 
+     * @param restClient
+     * REST API interface
+     * @param projectKey
+     * Key of the project whose versions shall be determined.
+     * @return Map of all version strings to their version ID.<br>
+     * (Key: version name; Value: version ID)
+     * @throws JiraException when the retrieval fails
+     */
+    public static HashMap<String, String> getVersionIdMap(RestClient restClient, String projectKey) throws JiraException
+    {
+    	JSON result = null;
+
+        try {
+            result = restClient.get(String.format("%sproject/%s/versions", getBaseUri(), projectKey));
+        } catch (Exception exc) {
+            throw new JiraException(String.format("Failed to retrieve versions list for project %s.", projectKey), exc);
+        }
+        
+        HashMap<String, String> versionIdMap = new HashMap<String, String>();
+        
+        if (result instanceof JSONArray) {
+        	JSONArray jsonArray = (JSONArray) result;
+        	for (int entryIndex = 0; entryIndex < jsonArray.size(); ++entryIndex) {
+        		JSONObject entry = jsonArray.getJSONObject(entryIndex);
+        		final String versionName = entry.getString("name");
+        		final String versionId = entry.getString("id");
+        		versionIdMap.put(versionName, versionId);
+        	}
+        }
+        
+        return versionIdMap;
     }
 
     private void deserialise(JSONObject json) {

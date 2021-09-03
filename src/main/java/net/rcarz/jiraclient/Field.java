@@ -21,6 +21,7 @@ package net.rcarz.jiraclient;
 
 import java.lang.Iterable;
 import java.lang.UnsupportedOperationException;
+import java.net.URI;
 import java.sql.Timestamp;
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
@@ -30,6 +31,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import net.sf.json.JSON;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import net.sf.json.JSONNull;
@@ -152,7 +154,7 @@ public final class Field {
     public static final String SECURITY = "security";
 
     public static final String DATE_FORMAT = "yyyy-MM-dd";
-    public static final String DATETIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
+    public static final String DATETIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSX";
 
     private Field() { }
 
@@ -810,6 +812,49 @@ public final class Field {
      */
     public static ValueTuple valueById(String id) {
         return new ValueTuple(ValueType.ID_NUMBER, id);
+    }
+    
+    /**
+     * Provides a map of all Jira custom fields and their data types. 
+     * 
+     * @param restclient
+     * Jira API.
+     * @return Map of all custom fields and their data types. (Key: issue field name; Value: data type name)
+     * @throws JiraException In case the information could not be determined.
+     */
+    public static HashMap<String, String> getCustomFieldDataTypes(RestClient restclient) throws JiraException
+    {
+    	JSON result = null;
+
+        try {
+            URI uri = restclient.buildURI(Issue.getBaseUri() + "field/");
+            result = restclient.get(uri);
+        } catch (Exception ex) {
+            throw new JiraException("Failed to retrieve field information", ex);
+        }
+        
+        HashMap<String, String> dataTypeMap = new HashMap<String, String>();
+        
+        if (result instanceof JSONArray) {
+        	JSONArray jsonArray = (JSONArray) result;
+        	for (int entryIndex = 0; entryIndex < jsonArray.size(); ++entryIndex) {
+        		JSONObject entry = jsonArray.getJSONObject(entryIndex);
+        		final String fieldName = entry.getString("id");
+        		JSONObject schema = entry.getJSONObject("schema");
+        		if (schema != null && !schema.isNullObject()) {
+	        		final String dataType = schema.getString("type");
+	        		if (dataType.equals("array")) {
+	        			final String itemType = schema.getString("items");
+	        			dataTypeMap.put(fieldName, String.format("array[%s]", itemType));
+	        		}
+	        		else {
+	        			dataTypeMap.put(fieldName, dataType);
+	        		}
+        		}
+        	}
+        }
+        
+        return dataTypeMap;
     }
 }
 

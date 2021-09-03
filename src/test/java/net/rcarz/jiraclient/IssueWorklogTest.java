@@ -53,6 +53,7 @@ public class IssueWorklogTest {
         Issue issue = mock(Issue.class);
         issue.restclient = mock(RestClient.class);
         doCallRealMethod().when(issue).addWorkLog(anyString(), any(DateTime.class), anyLong());
+        doCallRealMethod().when(issue).addWorkLog(anyString(), any(DateTime.class), anyString());
 
         // Act
         issue.addWorkLog("test", DateTime.now(), 60);
@@ -67,6 +68,7 @@ public class IssueWorklogTest {
         Issue issue = mock(Issue.class);
         issue.restclient = mock(RestClient.class);
         doCallRealMethod().when(issue).addWorkLog(anyString(), any(DateTime.class), anyLong());
+        doCallRealMethod().when(issue).addWorkLog(anyString(), any(DateTime.class), anyString());
 
         // Act
         // Assert
@@ -79,6 +81,7 @@ public class IssueWorklogTest {
         Issue issue = mock(Issue.class);
         issue.restclient = mock(RestClient.class);
         doCallRealMethod().when(issue).addWorkLog(anyString(), any(DateTime.class), anyLong());
+        doCallRealMethod().when(issue).addWorkLog(anyString(), any(DateTime.class), anyString());
 
         // Act
         // Assert
@@ -91,6 +94,7 @@ public class IssueWorklogTest {
         Issue issue = mock(Issue.class);
         issue.restclient = mock(RestClient.class);
         doCallRealMethod().when(issue).addWorkLog(anyString(), any(DateTime.class), anyLong());
+        doCallRealMethod().when(issue).addWorkLog(anyString(), any(DateTime.class), anyString());
 
         // Act
         // Assert
