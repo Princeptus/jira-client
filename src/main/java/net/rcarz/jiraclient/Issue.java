@@ -26,6 +26,7 @@ import java.net.URISyntaxException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
+import net.rcarz.jiraclient.Field.Meta;
 import net.rcarz.utils.WorklogUtils;
 import net.sf.json.JSON;
 import net.sf.json.JSONArray;
@@ -142,6 +143,16 @@ public class Issue extends Resource {
         public FluentCreate field(String name, Object value) {
             fields.put(name, value);
             return this;
+        }
+        
+        /**
+         * Provides the meta data for creation.
+         *  
+         * @return Meta data.
+         */
+        public JSONObject getCreateMetaData()
+        {
+        	return createmeta;
         }
     }
 
@@ -424,6 +435,16 @@ public class Issue extends Resource {
          */
         public FluentUpdate fieldRemove(String name, Object value) {
             return fieldOperation("remove", name, value);
+        }
+        
+        /**
+         * Provides the meta data for updating an issue.
+         * 
+         * @return Meta data.
+         */
+        public JSONObject getUpdateMetaData()
+        {
+        	return editmeta;
         }
     }
 
@@ -907,7 +928,7 @@ public class Issue extends Resource {
         return projects.get(0).getIssueTypes().get(0).getFields();
     }
 
-    private JSONObject getEditMetadata() throws JiraException {
+    public JSONObject getEditMetadata() throws JiraException {
         JSON result = null;
 
         try {
