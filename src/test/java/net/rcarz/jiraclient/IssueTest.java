@@ -10,11 +10,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import net.sf.json.JSON;
-import net.sf.json.JSONNull;
-
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
+import org.json.JSONObject;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -151,7 +149,11 @@ public class IssueTest {
         Issue issue = new Issue(restClient, Utils.getTestIssue());
         issue.addRemoteLink("test-url", "test-title", "test-summary");
         assertEquals("/rest/api/latest/issue/FILTA-43/remotelink", restClient.postPath);
-        assertEquals("{\"object\":{\"url\":\"test-url\",\"title\":\"test-title\",\"summary\":\"test-summary\"}}", restClient.postPayload.toString(0));
+        assertEquals(true, restClient.postPayload.has("object"));
+        JSONObject object = (JSONObject) restClient.postPayload.get("object");
+        assertEquals("test-url", object.opt("url"));
+        assertEquals("test-title", object.opt("title"));
+        assertEquals("test-summary", object.opt("summary"));
     }
 
 
@@ -169,35 +171,43 @@ public class IssueTest {
                 .status(true, "status-icon", "status-title", "status-url")
                 .create();
         assertEquals("/rest/api/latest/issue/FILTA-43/remotelink", restClient.postPath);
-        assertEquals(
-                "{\"globalId\":\"gid\"," +
-                "\"application\":" +
-                        "{\"type\":\"app-type\",\"name\":\"app-name\"}," +
-                "\"relationship\":\"fixes\"," +
-                "\"object\":{" +
-                        "\"url\":\"gid\"," +
-                        "\"title\":\"test-title\"," +
-                        "\"summary\":\"summary\"," +
-                        "\"icon\":" +
-                            "{\"url16x16\":\"icon\",\"title\":\"icon-url\"}," +
-                        "\"status\":{\"resolved\":\"true\",\"icon\":" +
-                            "{\"title\":\"status-title\",\"url16x16\":\"status-icon\",\"link\":\"status-url\"}" +
-                "}}}",
-                restClient.postPayload.toString(0));
+        assertEquals("gid", restClient.postPayload.optString("globalId"));
+        assertEquals(true, restClient.postPayload.has("application"));
+        JSONObject application = restClient.postPayload.getJSONObject("application");
+        assertEquals("app-type", application.optString("type"));
+        assertEquals("app-name", application.optString("name"));
+        assertEquals("fixes", restClient.postPayload.optString("relationship"));
+        assertEquals(true, restClient.postPayload.has("object"));
+        JSONObject object = restClient.postPayload.getJSONObject("object");
+        assertEquals("gid", object.optString("url"));
+        assertEquals("test-title", object.optString("title"));
+        assertEquals("summary", object.optString("summary"));
+        assertEquals(true, object.has("icon"));
+        JSONObject icon = object.getJSONObject("icon");
+        assertEquals("icon", icon.optString("url16x16"));
+        assertEquals("icon-url", icon.optString("title"));
+        assertEquals(true, object.has("icon"));
+        JSONObject status = object.getJSONObject("status");
+        assertEquals(true, status.optBoolean("resolved"));
+        assertEquals(true, status.has("icon"));
+        JSONObject icon2 = status.getJSONObject("icon");
+        assertEquals("status-title", icon2.optString("title"));
+        assertEquals("status-icon", icon2.optString("url16x16"));
+        assertEquals("status-url", icon2.optString("link"));
     }
 
 
     private static class TestableRestClient extends RestClient {
 
         public String postPath = "not called";
-        public JSON postPayload = JSONNull.getInstance();
+        public JSONObject postPayload = null;
 
         public TestableRestClient() {
             super(null, null);
         }
 
         @Override
-        public JSON post(String path, JSON payload) {
+        public JSONObject post(String path, JSONObject payload) {
             postPath = path;
             postPayload = payload;
             return null;

@@ -27,7 +27,7 @@ import net.rcarz.jiraclient.RestClient;
 import java.util.List;
 import java.util.Map;
 
-import net.sf.json.JSONObject;
+import org.json.JSONObject;
 
 /**
  * A base class for GreenHopper issues.
@@ -67,27 +67,25 @@ public abstract class GreenHopperIssue extends GreenHopperResource {
     }
 
     private void deserialise(JSONObject json) {
-        Map map = json;
-
-        id = Field.getInteger(map.get("id"));
-        key = Field.getString(map.get("key"));
-        hidden = Field.getBoolean(map.get("hidden"));
-        summary = Field.getString(map.get("summary"));
-        typeName = Field.getString(map.get("key"));
-        typeId = Field.getString(map.get("typeId"));
-        typeUrl = Field.getString(map.get("typeUrl"));
-        priorityUrl = Field.getString(map.get("priorityUrl"));
-        priorityName = Field.getString(map.get("priorityName"));
-        done = Field.getBoolean(map.get("done"));
-        assignee = Field.getString(map.get("assignee"));
-        assigneeName = Field.getString(map.get("assigneeName"));
-        avatarUrl = Field.getString(map.get("avatarUrl"));
-        colour = Field.getString(map.get("color"));
-        statusId = Field.getString(map.get("statusId"));
-        statusName = Field.getString(map.get("statusName"));
-        statusUrl = Field.getString(map.get("statusUrl"));
-        fixVersions = GreenHopperField.getIntegerArray(map.get("fixVersions"));
-        projectId = Field.getInteger(map.get("projectId"));
+        id = Field.getInteger(json.opt("id"));
+        key = Field.getString(json.opt("key"));
+        hidden = Field.getBoolean(json.opt("hidden"));
+        summary = Field.getString(json.opt("summary"));
+        typeName = Field.getString(json.opt("key"));
+        typeId = Field.getString(json.opt("typeId"));
+        typeUrl = Field.getString(json.opt("typeUrl"));
+        priorityUrl = Field.getString(json.opt("priorityUrl"));
+        priorityName = Field.getString(json.opt("priorityName"));
+        done = Field.getBoolean(json.opt("done"));
+        assignee = Field.getString(json.opt("assignee"));
+        assigneeName = Field.getString(json.opt("assigneeName"));
+        avatarUrl = Field.getString(json.opt("avatarUrl"));
+        colour = Field.getString(json.opt("color"));
+        statusId = Field.getString(json.opt("statusId"));
+        statusName = Field.getString(json.opt("statusName"));
+        statusUrl = Field.getString(json.opt("statusUrl"));
+        fixVersions = GreenHopperField.getIntegerArray(json.opt("fixVersions"));
+        projectId = Field.getInteger(json.opt("projectId"));
     }
 
     /**

@@ -1,8 +1,6 @@
 package net.rcarz.jiraclient;
 
-import java.util.Map;
-
-import net.sf.json.JSONObject;
+import org.json.JSONObject;
 
 public class IssueHistoryItem extends Resource {
 
@@ -24,14 +22,13 @@ public class IssueHistoryItem extends Resource {
     }
 
     private void deserialise(RestClient restclient, JSONObject json) {
-        Map map = json;
-        self = Field.getString(map.get("self"));
-        id = Field.getString(map.get("id"));
-        field = Field.getString(map.get("field"));
-        from = Field.getString(map.get("from"));
-        to = Field.getString(map.get("to"));
-        fromStr = Field.getString(map.get("fromString"));
-        toStr = Field.getString(map.get("toString"));
+        self = Field.getString(json.opt("self"));
+        id = Field.getString(json.opt("id"));
+        field = Field.getString(json.opt("field"));
+        from = Field.getString(json.opt("from"));
+        to = Field.getString(json.opt("to"));
+        fromStr = Field.getString(json.opt("fromString"));
+        toStr = Field.getString(json.opt("toString"));
     }
 
     public String getField() {

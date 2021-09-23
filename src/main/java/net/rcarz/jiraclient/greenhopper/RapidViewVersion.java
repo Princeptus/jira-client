@@ -26,7 +26,8 @@ import net.rcarz.jiraclient.Version;
 
 import java.util.Map;
 
-import net.sf.json.JSONObject;
+import org.json.JSONObject;
+
 
 /**
  * Represents a GreenHopper JIRA project version.
@@ -51,12 +52,10 @@ public class RapidViewVersion extends GreenHopperResource {
     }
 
     private void deserialise(JSONObject json) {
-        Map map = json;
-
-        id = Field.getInteger(map.get("id"));
-        name = Field.getString(map.get("name"));
-        sequence = Field.getInteger(map.get("sequence"));
-        released = Field.getBoolean(map.get("released"));
+        id = Field.getInteger(json.opt("id"));
+        name = Field.getString(json.opt("name"));
+        sequence = Field.getInteger(json.opt("sequence"));
+        released = Field.getBoolean(json.opt("released"));
     }
 
     /**

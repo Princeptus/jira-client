@@ -20,12 +20,8 @@
 package net.rcarz.jiraclient;
 
 import java.util.HashMap;
-import java.util.Map;
-
-import net.rcarz.jiraclient.Issue.FluentCreate;
-import net.sf.json.JSON;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 /**
  * Represents an issue component.
@@ -114,7 +110,7 @@ public class Component extends Resource {
          * @throws JiraException when the create fails
          */
         public Component execute() throws JiraException {
-            JSON result = null;
+            JSONObject result = null;
 
             try {
                 result = restclient.post(getRestUri(null), req);
@@ -122,8 +118,7 @@ public class Component extends Resource {
                 throw new JiraException("Failed to create issue", ex);
             }
 
-            if (!(result instanceof JSONObject) || !((JSONObject) result).containsKey("id")
-                    || !(((JSONObject) result).get("id") instanceof String)) {
+            if (result == null || !result.has("id") || !(result.get("id") instanceof String)) {
                 throw new JiraException("Unexpected result on create component");
             }
 
@@ -149,13 +144,11 @@ public class Component extends Resource {
     }
 
     private void deserialise(JSONObject json) {
-        Map map = json;
-
-        self = Field.getString(map.get("self"));
-        id = Field.getString(map.get("id"));
-        name = Field.getString(map.get("name"));
-        description = Field.getString(map.get("description"));
-        isAssigneeTypeValid = Field.getBoolean(map.get("isAssigneeTypeValid"));
+        self = Field.getString(json.opt("self"));
+        id = Field.getString(json.opt("id"));
+        name = Field.getString(json.opt("name"));
+        description = Field.getString(json.opt("description"));
+        isAssigneeTypeValid = Field.getBoolean(json.opt("isAssigneeTypeValid"));
     }
 
     /**
@@ -171,18 +164,18 @@ public class Component extends Resource {
     public static Component get(RestClient restclient, String id)
         throws JiraException {
 
-        JSON result = null;
+        JSONObject result = null;
 
         try {
-            result = restclient.get(getRestUri(id));
+            result = restclient.getMap(getRestUri(id));
         } catch (Exception ex) {
             throw new JiraException("Failed to retrieve component " + id, ex);
         }
 
-        if (!(result instanceof JSONObject))
+        if (result == null)
             throw new JiraException("JSON payload is malformed");
 
-        return new Component(restclient, (JSONObject)result);
+        return new Component(restclient, result);
     }
     
     /**
@@ -198,20 +191,19 @@ public class Component extends Resource {
      */
     public static HashMap<String, String> getComponentIdMap(RestClient restClient, String projectKey) throws JiraException
     {
-    	JSON result = null;
+    	JSONArray result = null;
 
         try {
-            result = restClient.get(String.format("%sproject/%s/components", getBaseUri(), projectKey));
+            result = restClient.getArray(String.format("%sproject/%s/components", getBaseUri(), projectKey));
         } catch (Exception exc) {
             throw new JiraException(String.format("Failed to retrieve component list for project %s.", projectKey), exc);
         }
         
         HashMap<String, String> componentIdMap = new HashMap<String, String>();
         
-        if (result instanceof JSONArray) {
-        	JSONArray jsonArray = (JSONArray) result;
-        	for (int entryIndex = 0; entryIndex < jsonArray.size(); ++entryIndex) {
-        		JSONObject entry = jsonArray.getJSONObject(entryIndex);
+        if (result != null) {
+        	for (int entryIndex = 0; entryIndex < result.length(); ++entryIndex) {
+        		JSONObject entry = result.getJSONObject(entryIndex);
         		final String componentName = entry.getString("name");
         		final String componentId = entry.getString("id");
         		componentIdMap.put(componentName, componentId);

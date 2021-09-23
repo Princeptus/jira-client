@@ -1,6 +1,6 @@
 package net.rcarz.jiraclient;
 
-import net.sf.json.JSONObject;
+import org.json.JSONObject;
 import org.junit.Test;
 
 import java.sql.Time;
@@ -136,6 +136,9 @@ public class TimeTrackingTest {
 
     TimeTracking timeTracking = new TimeTracking(testJson);
     final JSONObject jsonObject = timeTracking.toJsonObject();
-    assertEquals(testJson,jsonObject);
+    assertEquals(testJson.optString("originalEstimate"), jsonObject.optString("originalEstimate"));
+    assertEquals(testJson.optString("remainingEstimate"), jsonObject.optString("remainingEstimate"));
+    assertEquals(testJson.optInt("originalEstimateSeconds"), jsonObject.optInt("originalEstimateSeconds"));
+    assertEquals(testJson.optInt("remainingEstimateSeconds"), jsonObject.optInt("remainingEstimateSeconds"));
   }
 }

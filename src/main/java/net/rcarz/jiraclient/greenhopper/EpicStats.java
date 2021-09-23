@@ -21,9 +21,7 @@ package net.rcarz.jiraclient.greenhopper;
 
 import net.rcarz.jiraclient.Field;
 
-import java.util.Map;
-
-import net.sf.json.JSONObject;
+import org.json.JSONObject;
 
 /**
  * GreenHopper epic statistics.
@@ -43,14 +41,12 @@ public class EpicStats {
      * @param json JSON payload
      */
     protected EpicStats(JSONObject json) {
-        Map map = json;
-
-        notDoneEstimate = Field.getDouble(map.get("notDoneEstimate"));
-        doneEstimate = Field.getDouble(map.get("doneEstimate"));
-        estimated = Field.getInteger(map.get("estimated"));
-        notEstimated = Field.getInteger(map.get("notEstimated"));
-        notDone = Field.getInteger(map.get("notDone"));
-        done = Field.getInteger(map.get("done"));
+        notDoneEstimate = Field.getDouble(json.opt("notDoneEstimate"));
+        doneEstimate = Field.getDouble(json.opt("doneEstimate"));
+        estimated = Field.getInteger(json.opt("estimated"));
+        notEstimated = Field.getInteger(json.opt("notEstimated"));
+        notDone = Field.getInteger(json.opt("notDone"));
+        done = Field.getInteger(json.opt("done"));
     }
 
     public Double getNotDoneEstimate() {

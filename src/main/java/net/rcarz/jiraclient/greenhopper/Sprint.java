@@ -26,9 +26,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import net.sf.json.JSONObject;
-
 import org.joda.time.DateTime;
+import org.json.JSONObject;
 
 /**
  * Represents a GreenHopper sprint.
@@ -57,15 +56,13 @@ public class Sprint extends GreenHopperResource {
     }
 
     private void deserialise(JSONObject json) {
-        Map map = json;
-
-        id = Field.getInteger(map.get("id"));
-        name = Field.getString(map.get("name"));
-        closed = map.containsValue("CLOSED");
-        startDate = GreenHopperField.getDateTime(map.get("startDate"));
-        endDate = GreenHopperField.getDateTime(map.get("endDate"));
-        completeDate = GreenHopperField.getDateTime(map.get("completeDate"));
-        issuesIds = GreenHopperField.getIntegerArray(map.get("issuesIds"));
+        id = Field.getInteger(json.opt("id"));
+        name = Field.getString(json.opt("name"));
+        closed = json.has("CLOSED");
+        startDate = GreenHopperField.getDateTime(json.opt("startDate"));
+        endDate = GreenHopperField.getDateTime(json.opt("endDate"));
+        completeDate = GreenHopperField.getDateTime(json.opt("completeDate"));
+        issuesIds = GreenHopperField.getIntegerArray(json.opt("issuesIds"));
     }
 
     @Override

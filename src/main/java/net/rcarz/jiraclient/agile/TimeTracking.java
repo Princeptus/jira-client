@@ -19,10 +19,11 @@
 
 package net.rcarz.jiraclient.agile;
 
+import org.json.JSONObject;
+
 import net.rcarz.jiraclient.Field;
 import net.rcarz.jiraclient.JiraException;
 import net.rcarz.jiraclient.RestClient;
-import net.sf.json.JSONObject;
 
 /**
  * Represents an Agile TimeTracking.
@@ -57,12 +58,12 @@ public class TimeTracking extends AgileResource {
     @Override
     void deserialize(JSONObject json) throws JiraException {
         super.deserialize(json);
-        this.originalEstimate = Field.getString(json.get("originalEstimate"));
-        this.remainingEstimate = Field.getString(json.get("remainingEstimate"));
-        this.timeSpent = Field.getString(json.get("timeSpent"));
-        this.originalEstimateSeconds = Field.getLong(json.get("originalEstimateSeconds"));
-        this.remainingEstimateSeconds = Field.getLong(json.get("remainingEstimateSeconds"));
-        this.timeSpentSeconds = Field.getLong(json.get("timeSpentSeconds"));
+        this.originalEstimate = Field.getString(json.opt("originalEstimate"));
+        this.remainingEstimate = Field.getString(json.opt("remainingEstimate"));
+        this.timeSpent = Field.getString(json.opt("timeSpent"));
+        this.originalEstimateSeconds = Field.getLong(json.opt("originalEstimateSeconds"));
+        this.remainingEstimateSeconds = Field.getLong(json.opt("remainingEstimateSeconds"));
+        this.timeSpentSeconds = Field.getLong(json.opt("timeSpentSeconds"));
     }
 
     @Override

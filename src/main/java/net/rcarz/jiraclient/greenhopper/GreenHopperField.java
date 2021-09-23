@@ -24,11 +24,10 @@ import net.rcarz.jiraclient.RestClient;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 /**
  * Utility functions for translating between JSON and fields.
@@ -65,8 +64,8 @@ public final class GreenHopperField {
     public static EpicStats getEpicStats(Object es) {
         EpicStats result = null;
 
-        if (es instanceof JSONObject && !((JSONObject)es).isNullObject())
-            result = new EpicStats((JSONObject)es);
+        if (es instanceof JSONObject)
+            result = new EpicStats((JSONObject) es);
 
         return result;
     }
@@ -81,7 +80,7 @@ public final class GreenHopperField {
     public static EstimateStatistic getEstimateStatistic(Object es) {
         EstimateStatistic result = null;
 
-        if (es instanceof JSONObject && !((JSONObject)es).isNullObject())
+        if (es instanceof JSONObject)
             result = new EstimateStatistic((JSONObject)es);
 
         return result;
@@ -97,7 +96,7 @@ public final class GreenHopperField {
     public static EstimateSum getEstimateSum(Object es) {
         EstimateSum result = null;
 
-        if (es instanceof JSONObject && !((JSONObject)es).isNullObject())
+        if (es instanceof JSONObject)
             result = new EstimateSum((JSONObject)es);
 
         return result;
@@ -135,7 +134,7 @@ public final class GreenHopperField {
 
         T result = null;
 
-        if (r instanceof JSONObject && !((JSONObject)r).isNullObject()) {
+        if (r instanceof JSONObject) {
             if (type == Epic.class)
                 result = (T)new Epic(restclient, (JSONObject)r);
             else if (type == Marker.class)

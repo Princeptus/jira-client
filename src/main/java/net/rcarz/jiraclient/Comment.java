@@ -19,11 +19,8 @@
 
 package net.rcarz.jiraclient;
 
-import net.sf.json.JSON;
-import net.sf.json.JSONObject;
-
 import java.util.Date;
-import java.util.Map;
+import org.json.JSONObject;
 
 /**
  * Represents an issue comment.
@@ -58,17 +55,15 @@ public class Comment extends Resource {
     }
 
     private void deserialise(JSONObject json) {
-        Map map = json;
 
-        self = Field.getString(map.get("self"));
-        id = Field.getString(map.get("id"));
-        author = Field.getResource(User.class, map.get("author"), restclient);
-        body = Field.getString(map.get("body"));
-        created = Field.getDateTime(map.get("created"));
-        updated = Field.getDateTime(map.get("updated"));
-        updatedAuthor = Field.getResource(User.class, map.get("updatedAuthor"), restclient);
-        Object obj = map.get("visibility");
-        visibility = Field.getResource(Visibility.class, map.get("visibility"),restclient);
+        self = Field.getString(json.opt("self"));
+        id = Field.getString(json.opt("id"));
+        author = Field.getResource(User.class, json.opt("author"), restclient);
+        body = Field.getString(json.opt("body"));
+        created = Field.getDateTime(json.opt("created"));
+        updated = Field.getDateTime(json.opt("updated"));
+        updatedAuthor = Field.getResource(User.class, json.opt("updatedAuthor"), restclient);
+        visibility = Field.getResource(Visibility.class, json.opt("visibility"), restclient);
     }
 
     /**
@@ -85,18 +80,18 @@ public class Comment extends Resource {
     public static Comment get(RestClient restclient, String issue, String id)
         throws JiraException {
 
-        JSON result = null;
+        JSONObject result = null;
 
         try {
-            result = restclient.get(getBaseUri() + "issue/" + issue + "/comment/" + id);
+            result = restclient.getMap(getBaseUri() + "issue/" + issue + "/comment/" + id);
         } catch (Exception ex) {
             throw new JiraException("Failed to retrieve comment " + id + " on issue " + issue, ex);
         }
 
-        if (!(result instanceof JSONObject))
+        if (result == null)
             throw new JiraException("JSON payload is malformed");
 
-        return new Comment(restclient, (JSONObject)result, issue);
+        return new Comment(restclient, result, issue);
     }
 
     /**
@@ -135,7 +130,7 @@ public class Comment extends Resource {
             req.put("visibility", vis);
         }
 
-        JSON result = null;
+        JSONObject result = null;
 
         try {
             String issueUri = getBaseUri() + "issue/" + issueKey;
@@ -144,11 +139,11 @@ public class Comment extends Resource {
             throw new JiraException("Failed add update comment " + id, ex);
         }
 
-        if (!(result instanceof JSONObject)) {
+        if (result == null) {
             throw new JiraException("JSON payload is malformed");
         }
 
-        deserialise((JSONObject) result);
+        deserialise(result);
     }
 
     @Override

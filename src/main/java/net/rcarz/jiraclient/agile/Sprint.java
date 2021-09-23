@@ -22,10 +22,11 @@ package net.rcarz.jiraclient.agile;
 import net.rcarz.jiraclient.Field;
 import net.rcarz.jiraclient.JiraException;
 import net.rcarz.jiraclient.RestClient;
-import net.sf.json.JSONObject;
 
 import java.util.Date;
 import java.util.List;
+
+import org.json.JSONObject;
 
 /**
  * Represents an Agile Sprint.
@@ -85,11 +86,11 @@ public class Sprint extends AgileResource {
     @Override
     protected void deserialize(JSONObject json) throws JiraException {
         super.deserialize(json);
-        state = Field.getString(json.get("state"));
-        originBoardId = getLong(json.get("originBoardId"));
-        startDate = Field.getDateTime(json.get("startDate"));
-        endDate = Field.getDateTime(json.get("endDate"));
-        completeDate = Field.getDateTime(json.get("completeDate"));
+        state = Field.getString(json.opt("state"));
+        originBoardId = getLong(json.opt("originBoardId"));
+        startDate = Field.getDateTime(json.opt("startDate"));
+        endDate = Field.getDateTime(json.opt("endDate"));
+        completeDate = Field.getDateTime(json.opt("completeDate"));
     }
 
     public String getState() {

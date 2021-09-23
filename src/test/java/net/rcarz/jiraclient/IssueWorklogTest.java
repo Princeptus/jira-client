@@ -1,9 +1,7 @@
 package net.rcarz.jiraclient;
 
-import net.sf.json.JSON;
-import net.sf.json.JSONObject;
-import net.sf.json.JSONSerializer;
 import org.joda.time.DateTime;
+import org.json.JSONObject;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -22,7 +20,7 @@ public class IssueWorklogTest {
     public void testParsing_inputValid_shouldCreateJsonObject() throws Exception {
         // Arrange
         // Act
-        JSONObject worklogObject = (JSONObject) JSONSerializer.toJSON(RESPONSE_WORKLOG_BODY);
+        JSONObject worklogObject = new JSONObject(RESPONSE_WORKLOG_BODY);
 
         // Assert
         assertNotNull(worklogObject);
@@ -32,7 +30,7 @@ public class IssueWorklogTest {
     public void testParsing_inputValidJson_shouldCreateWorklog() throws Exception {
         // Arrange
         // Act
-        WorkLog workLog = new WorkLog(mock(RestClient.class), (JSONObject) JSONSerializer.toJSON(RESPONSE_WORKLOG_BODY));
+        WorkLog workLog = new WorkLog(mock(RestClient.class), new JSONObject(RESPONSE_WORKLOG_BODY));
 
         // Assert
         assertNotNull(workLog);
@@ -59,7 +57,7 @@ public class IssueWorklogTest {
         issue.addWorkLog("test", DateTime.now(), 60);
 
         // Assert
-        verify(issue.restclient).post(anyString(), any(JSON.class));
+        verify(issue.restclient).post(anyString(), any(JSONObject.class));
     }
 
     @Test(expected = JiraException.class)

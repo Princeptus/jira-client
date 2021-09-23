@@ -26,14 +26,10 @@ import java.net.URISyntaxException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-import net.rcarz.jiraclient.Field.Meta;
 import net.rcarz.utils.WorklogUtils;
-import net.sf.json.JSON;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 import org.joda.time.DateTime;
-import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 /**
  * Represents a JIRA issue.
@@ -112,7 +108,7 @@ public class Issue extends Resource {
             JSONObject req = new JSONObject();
             req.put("fields", fieldmap);
 
-            JSON result = null;
+            JSONObject result = null;
 
             try {
                 result = restclient.post(getRestUri(null), req);
@@ -120,8 +116,7 @@ public class Issue extends Resource {
                 throw new JiraException("Failed to create issue", ex);
             }
 
-            if (!(result instanceof JSONObject) || !((JSONObject) result).containsKey("key")
-                    || !(((JSONObject) result).get("key") instanceof String)) {
+            if (result == null || !result.has("key") || !(result.get("key") instanceof String)) {
                 throw new JiraException("Unexpected result on create issue");
             }
 
@@ -324,22 +319,21 @@ public class Issue extends Resource {
      */
     public static int count(RestClient restclient, String jql) throws JiraException {
         final String j = jql;
-        JSON result = null;
+        JSONObject result = null;
         try {
             Map<String, String> queryParams = new HashMap<String, String>();
             queryParams.put("jql", j);
             queryParams.put("maxResults", "1");
             URI searchUri = restclient.buildURI(getBaseUri() + "search", queryParams);
-            result = restclient.get(searchUri);
+            result = restclient.getMap(searchUri);
         } catch (Exception ex) {
             throw new JiraException("Failed to search issues", ex);
         }
 
-        if (!(result instanceof JSONObject)) {
+        if (result == null) {
             throw new JiraException("JSON payload is malformed");
         }
-        Map map = (Map) result;
-        return Field.getInteger(map.get("total"));
+        return Field.getInteger(result.opt("total"));
     }
 
     /**
@@ -379,10 +373,10 @@ public class Issue extends Resource {
 
             JSONObject req = new JSONObject();
 
-            if (fieldmap.size() > 0)
+            if (fieldmap.keySet().size() > 0)
                 req.put("fields", fieldmap);
 
-            if (updatemap.size() > 0)
+            if (updatemap.keySet().size() > 0)
                 req.put("update", updatemap);
 
             try {
@@ -491,7 +485,7 @@ public class Issue extends Resource {
 
             JSONObject req = new JSONObject();
 
-            if (fieldmap.size() > 0)
+            if (fieldmap.keySet().size() > 0)
                 req.put("fields", fieldmap);
 
             JSONObject t = new JSONObject();
@@ -654,27 +648,24 @@ public class Issue extends Resource {
                 startAt = startAt + issues.size();
             }
 
-            JSON result = null;
+            JSONObject result = null;
 
             try {
                 URI searchUri = createSearchURI(restclient, jql, includedFields,
                         expandFields, maxResults, startAt);
-                result = restclient.get(searchUri);
+                result = restclient.getMap(searchUri);
             } catch (Exception ex) {
                 throw new JiraException("Failed to search issues", ex);
             }
 
-            if (!(result instanceof JSONObject)) {
+            if (result == null) {
                 throw new JiraException("JSON payload is malformed");
             }
 
-            
-            Map map = (Map) result;
-    
-            this.startAt = Field.getInteger(map.get("startAt"));
-            this.maxResults = Field.getInteger(map.get("maxResults"));
-            this.total = Field.getInteger(map.get("total"));
-            this.issues = Field.getResourceArray(Issue.class, map.get("issues"), restclient);
+            this.startAt = Field.getInteger(result.opt("startAt"));
+            this.maxResults = Field.getInteger(result.opt("maxResults"));
+            this.total = Field.getInteger(result.opt("total"));
+            this.issues = Field.getResourceArray(Issue.class, result.opt("issues"), restclient);
             return issues;
         }
     }
@@ -781,7 +772,7 @@ public class Issue extends Resource {
     }
 
     private String key = null;
-    private Map fields = null;
+    private JSONObject fields = null;
 
     /* system fields */
     private User assignee = null;
@@ -829,46 +820,44 @@ public class Issue extends Resource {
     }
 
     private void deserialise(JSONObject json) {
-        Map map = json;
+        id = Field.getString(json.opt("id"));
+        self = Field.getString(json.opt("self"));
+        key = Field.getString(json.opt("key"));
 
-        id = Field.getString(map.get("id"));
-        self = Field.getString(map.get("self"));
-        key = Field.getString(map.get("key"));
-
-        fields = (Map)map.get("fields");
+        fields = (JSONObject)json.opt("fields");
         if (fields == null)
             return;
 
-        assignee = Field.getResource(User.class, fields.get(Field.ASSIGNEE), restclient);
-        attachments = Field.getResourceArray(Attachment.class, fields.get(Field.ATTACHMENT), restclient);
-        changeLog = Field.getResource(ChangeLog.class, map.get(Field.CHANGE_LOG), restclient);
-        comments = Field.getComments(fields.get(Field.COMMENT), restclient, key);
-        components = Field.getResourceArray(Component.class, fields.get(Field.COMPONENTS), restclient);
-        description = Field.getString(fields.get(Field.DESCRIPTION));
-        dueDate = Field.getDate(fields.get(Field.DUE_DATE));
-        fixVersions = Field.getResourceArray(Version.class, fields.get(Field.FIX_VERSIONS), restclient);
-        issueLinks = Field.getResourceArray(IssueLink.class, fields.get(Field.ISSUE_LINKS), restclient);
-        issueType = Field.getResource(IssueType.class, fields.get(Field.ISSUE_TYPE), restclient);
-        labels = Field.getStringArray(fields.get(Field.LABELS));
-        parent = Field.getResource(Issue.class, fields.get(Field.PARENT), restclient);
-        priority = Field.getResource(Priority.class, fields.get(Field.PRIORITY), restclient);
-        project = Field.getResource(Project.class, fields.get(Field.PROJECT), restclient);
-        reporter = Field.getResource(User.class, fields.get(Field.REPORTER), restclient);
-        resolution = Field.getResource(Resolution.class, fields.get(Field.RESOLUTION), restclient);
-        resolutionDate = Field.getDateTime(fields.get(Field.RESOLUTION_DATE));
-        status = Field.getResource(Status.class, fields.get(Field.STATUS), restclient);
-        subtasks = Field.getResourceArray(Issue.class, fields.get(Field.SUBTASKS), restclient);
-        summary = Field.getString(fields.get(Field.SUMMARY));
-        timeTracking = Field.getTimeTracking(fields.get(Field.TIME_TRACKING));
-        versions = Field.getResourceArray(Version.class, fields.get(Field.VERSIONS), restclient);
-        votes = Field.getResource(Votes.class, fields.get(Field.VOTES), restclient);
-        watches = Field.getResource(Watches.class, fields.get(Field.WATCHES), restclient);
-        workLogs = Field.getWorkLogs(fields.get(Field.WORKLOG), restclient);
-        timeEstimate = Field.getInteger(fields.get(Field.TIME_ESTIMATE));
-        timeSpent = Field.getInteger(fields.get(Field.TIME_SPENT));
-        createdDate = Field.getDateTime(fields.get(Field.CREATED_DATE));
-        updatedDate = Field.getDateTime(fields.get(Field.UPDATED_DATE));
-        security = Field.getResource(Security.class, fields.get(Field.SECURITY), restclient);
+        assignee = Field.getResource(User.class, fields.opt(Field.ASSIGNEE), restclient);
+        attachments = Field.getResourceArray(Attachment.class, fields.opt(Field.ATTACHMENT), restclient);
+        changeLog = Field.getResource(ChangeLog.class, json.opt(Field.CHANGE_LOG), restclient);
+        comments = Field.getComments(fields.opt(Field.COMMENT), restclient, key);
+        components = Field.getResourceArray(Component.class, fields.opt(Field.COMPONENTS), restclient);
+        description = Field.getString(fields.opt(Field.DESCRIPTION));
+        dueDate = Field.getDate(fields.opt(Field.DUE_DATE));
+        fixVersions = Field.getResourceArray(Version.class, fields.opt(Field.FIX_VERSIONS), restclient);
+        issueLinks = Field.getResourceArray(IssueLink.class, fields.opt(Field.ISSUE_LINKS), restclient);
+        issueType = Field.getResource(IssueType.class, fields.opt(Field.ISSUE_TYPE), restclient);
+        labels = Field.getStringArray(fields.opt(Field.LABELS));
+        parent = Field.getResource(Issue.class, fields.opt(Field.PARENT), restclient);
+        priority = Field.getResource(Priority.class, fields.opt(Field.PRIORITY), restclient);
+        project = Field.getResource(Project.class, fields.opt(Field.PROJECT), restclient);
+        reporter = Field.getResource(User.class, fields.opt(Field.REPORTER), restclient);
+        resolution = Field.getResource(Resolution.class, fields.opt(Field.RESOLUTION), restclient);
+        resolutionDate = Field.getDateTime(fields.opt(Field.RESOLUTION_DATE));
+        status = Field.getResource(Status.class, fields.opt(Field.STATUS), restclient);
+        subtasks = Field.getResourceArray(Issue.class, fields.opt(Field.SUBTASKS), restclient);
+        summary = Field.getString(fields.opt(Field.SUMMARY));
+        timeTracking = Field.getTimeTracking(fields.opt(Field.TIME_TRACKING));
+        versions = Field.getResourceArray(Version.class, fields.opt(Field.VERSIONS), restclient);
+        votes = Field.getResource(Votes.class, fields.opt(Field.VOTES), restclient);
+        watches = Field.getResource(Watches.class, fields.opt(Field.WATCHES), restclient);
+        workLogs = Field.getWorkLogs(fields.opt(Field.WORKLOG), restclient);
+        timeEstimate = Field.getInteger(fields.opt(Field.TIME_ESTIMATE));
+        timeSpent = Field.getInteger(fields.opt(Field.TIME_SPENT));
+        createdDate = Field.getDateTime(fields.opt(Field.CREATED_DATE));
+        updatedDate = Field.getDateTime(fields.opt(Field.UPDATED_DATE));
+        security = Field.getResource(Security.class, fields.opt(Field.SECURITY), restclient);
     }
     
     /**
@@ -880,7 +869,7 @@ public class Issue extends Resource {
      */
     public User getUser(String fieldname)
     {
-    	return Field.getResource(User.class, fields.get(fieldname), restclient);
+    	return Field.getResource(User.class, fields.opt(fieldname), restclient);
     }
 
     private static String getRestUri(String key) {
@@ -892,7 +881,7 @@ public class Issue extends Resource {
 
         final String pval = project;
         final String itval = issueType;
-        JSON result = null;
+        JSONObject result = null;
 
         try {
             Map<String, String> params = new HashMap<String, String>();
@@ -902,23 +891,21 @@ public class Issue extends Resource {
             URI createuri = restclient.buildURI(
                 getBaseUri() + "issue/createmeta",
                 params);
-            result = restclient.get(createuri);
+            result = restclient.getMap(createuri);
         } catch (Exception ex) {
             throw new JiraException("Failed to retrieve issue metadata", ex);
         }
 
-        if (!(result instanceof JSONObject))
+        if (result == null)
             throw new JiraException("JSON payload is malformed");
 
-        JSONObject jo = (JSONObject)result;
-
-        if (jo.isNullObject() || !jo.containsKey("projects") ||
-                !(jo.get("projects") instanceof JSONArray))
+        if (!result.has("projects") ||
+                !(result.get("projects") instanceof JSONArray))
             throw new JiraException("Create metadata is malformed");
 
         List<Project> projects = Field.getResourceArray(
             Project.class,
-            (JSONArray)jo.get("projects"),
+            (JSONArray)result.get("projects"),
             restclient);
 
         if (projects.isEmpty() || projects.get(0).getIssueTypes().isEmpty())
@@ -929,49 +916,45 @@ public class Issue extends Resource {
     }
 
     public JSONObject getEditMetadata() throws JiraException {
-        JSON result = null;
+        JSONObject result = null;
 
         try {
-            result = restclient.get(getRestUri(key) + "/editmeta");
+            result = restclient.getMap(getRestUri(key) + "/editmeta");
         } catch (Exception ex) {
             throw new JiraException("Failed to retrieve issue metadata", ex);
         }
 
-        if (!(result instanceof JSONObject))
+        if (result == null)
             throw new JiraException("JSON payload is malformed");
 
-        JSONObject jo = (JSONObject)result;
-
-        if (jo.isNullObject() || !jo.containsKey("fields") ||
-                !(jo.get("fields") instanceof JSONObject))
+        if (!result.has("fields") ||
+                !(result.get("fields") instanceof JSONObject))
             throw new JiraException("Edit metadata is malformed");
 
-        return (JSONObject)jo.get("fields");
+        return (JSONObject)result.get("fields");
     }
 
     public List<Transition> getTransitions() throws JiraException {
-        JSON result = null;
+        JSONObject result = null;
 
         try {
             Map<String, String> params = new HashMap<String, String>();
             params.put("expand", "transitions.fields");
             URI transuri = restclient.buildURI(
                 getRestUri(key) + "/transitions",params);
-            result = restclient.get(transuri);
+            result = restclient.getMap(transuri);
         } catch (Exception ex) {
             throw new JiraException("Failed to retrieve transitions", ex);
         }
 
-        JSONObject jo = (JSONObject)result;
-
-        if (jo.isNullObject() || !jo.containsKey("transitions") ||
-                !(jo.get("transitions") instanceof JSONArray))
+        if (result == null || !result.has("transitions") ||
+                !(result.get("transitions") instanceof JSONArray))
             throw new JiraException("Transition metadata is missing.");
 
-        JSONArray transitions = (JSONArray) jo.get("transitions");
+        JSONArray transitions = (JSONArray) result.get("transitions");
 
         List<Transition> trans = new ArrayList<Transition>();
-        for(Object obj: transitions){
+        for(Object obj : transitions){
             JSONObject ob = (JSONObject) obj;
             trans.add(new Transition(restclient, ob));
         }
@@ -1097,7 +1080,7 @@ public class Issue extends Resource {
             req.put("visibility", vis);
         }
 
-        JSON result = null;
+        JSONObject result = null;
 
         try {
             result = restclient.post(getRestUri(key) + "/comment", req);
@@ -1105,11 +1088,11 @@ public class Issue extends Resource {
             throw new JiraException("Failed add comment to issue " + key, ex);
         }
 
-        if (!(result instanceof JSONObject)) {
+        if (result == null) {
             throw new JiraException("JSON payload is malformed");
         }
 
-        return new Comment(restclient, (JSONObject) result, key);
+        return new Comment(restclient, result, key);
     }
 
   /**
@@ -1150,9 +1133,8 @@ public class Issue extends Resource {
               //req.put("started", DateTimeFormat.forPattern(Field.DATETIME_FORMAT).print(startDate.getMillis()));
               req.put("timeSpent", timeSpent);
 
-              JSON result = restclient.post(getRestUri(key) + "/worklog", req);
-              JSONObject jo = (JSONObject) result;
-              return new WorkLog(restclient, jo);
+              JSONObject result = restclient.post(getRestUri(key) + "/worklog", req);
+              return new WorkLog(restclient, result);
           } catch (Exception ex) {
               throw new JiraException("Failed add worklog to issue " + key, ex);
           }
@@ -1271,20 +1253,20 @@ public class Issue extends Resource {
     private static JSONObject realGet(RestClient restclient, String key, Map<String, String> queryParams)
             throws JiraException {
 
-        JSON result = null;
+        JSONObject result = null;
 
         try {
             URI uri = restclient.buildURI(getBaseUri() + "issue/" + key, queryParams);
-            result = restclient.get(uri);
+            result = restclient.getMap(uri);
         } catch (Exception ex) {
             throw new JiraException("Failed to retrieve issue " + key, ex);
         }
 
-        if (!(result instanceof JSONObject)) {
+        if (result == null) {
             throw new JiraException("JSON payload is malformed");
         }
 
-        return (JSONObject) result;
+        return result;
     }
 
     /**
@@ -1490,7 +1472,7 @@ public class Issue extends Resource {
      */
     public Object getField(String name) {
 
-        return fields != null ? fields.get(name) : null;
+        return fields != null ? fields.opt(name) : null;
     }
     
     /**
@@ -1502,7 +1484,7 @@ public class Issue extends Resource {
      */
     public boolean hasField(String fieldName)
     {
-    	return fields.containsKey(fieldName);
+    	return fields.has(fieldName);
     }
 
     /**
@@ -1670,8 +1652,7 @@ public class Issue extends Resource {
         JSONArray obj;
         try {
             URI uri = restclient.buildURI(getRestUri(key) + "/remotelink");
-            JSON json = restclient.get(uri);
-            obj = (JSONArray) json;
+            obj = restclient.getArray(uri);
         } catch (Exception ex) {
             throw new JiraException("Failed to get remote links for issue "
                     + key, ex);
@@ -1724,8 +1705,7 @@ public class Issue extends Resource {
         JSONObject obj;
         try {
             URI uri = restclient.buildURI(getRestUri(key) + "/worklog");
-            JSON json = restclient.get(uri);
-            obj = (JSONObject) json;
+            obj = restclient.getMap(uri);
         } catch (Exception ex) {
             throw new JiraException("Failed to get worklog for issue "
                     + key, ex);

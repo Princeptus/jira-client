@@ -19,10 +19,7 @@
 
 package net.rcarz.jiraclient;
 
-import java.util.Map;
-
-import net.sf.json.JSON;
-import net.sf.json.JSONObject;
+import org.json.JSONObject;
 
 /**
  * Represents an issue priority.
@@ -46,12 +43,10 @@ public class Priority extends Resource {
     }
 
     private void deserialise(JSONObject json) {
-        Map map = json;
-
-        self = Field.getString(map.get("self"));
-        id = Field.getString(map.get("id"));
-        iconUrl = Field.getString(map.get("iconUrl"));
-        name = Field.getString(map.get("name"));
+        self = Field.getString(json.opt("self"));
+        id = Field.getString(json.opt("id"));
+        iconUrl = Field.getString(json.opt("iconUrl"));
+        name = Field.getString(json.opt("name"));
     }
 
     /**
@@ -67,18 +62,18 @@ public class Priority extends Resource {
     public static Priority get(RestClient restclient, String id)
         throws JiraException {
 
-        JSON result = null;
+        JSONObject result = null;
 
         try {
-            result = restclient.get(getBaseUri() + "priority/" + id);
+            result = restclient.getMap(getBaseUri() + "priority/" + id);
         } catch (Exception ex) {
             throw new JiraException("Failed to retrieve priority " + id, ex);
         }
 
-        if (!(result instanceof JSONObject))
+        if (result == null)
             throw new JiraException("JSON payload is malformed");
 
-        return new Priority(restclient, (JSONObject)result);
+        return new Priority(restclient, result);
     }
 
     @Override

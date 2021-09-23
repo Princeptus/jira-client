@@ -1,8 +1,6 @@
 package net.rcarz.jiraclient;
 
-import net.sf.json.JSONObject;
-
-import java.util.Map;
+import org.json.JSONObject;
 
 /**
  * Created by dgigon on 14/09/16.
@@ -27,9 +25,7 @@ public class Visibility extends Resource {
     }
 
     private void deserialise(JSONObject json) {
-        Map map = json;
-
-        type = Field.getString(map.get("type"));
-        value = Field.getString(map.get("value"));
+        type = Field.getString(json.opt("type"));
+        value = Field.getString(json.opt("value"));
     }
 }

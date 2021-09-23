@@ -22,9 +22,10 @@ package net.rcarz.jiraclient.agile;
 import net.rcarz.jiraclient.Field;
 import net.rcarz.jiraclient.JiraException;
 import net.rcarz.jiraclient.RestClient;
-import net.sf.json.JSONObject;
 
 import java.util.Date;
+
+import org.json.JSONObject;
 
 /**
  * Represents an Agile Comment.
@@ -60,10 +61,10 @@ public class Comment extends AgileResource {
         super.deserialize(json);
 
         this.author = getSubResource(User.class, json, "author");
-        this.body = Field.getString(json.get("body"));
+        this.body = Field.getString(json.opt("body"));
         this.updateAuthor = getSubResource(User.class, json, "updateAuthor");
-        this.created = Field.getDateTime(json.get("created"));
-        this.updated = Field.getDateTime(json.get("updated"));
+        this.created = Field.getDateTime(json.opt("created"));
+        this.updated = Field.getDateTime(json.opt("updated"));
     }
 
     @Override

@@ -22,9 +22,7 @@ package net.rcarz.jiraclient.greenhopper;
 import net.rcarz.jiraclient.Field;
 import net.rcarz.jiraclient.RestClient;
 
-import java.util.Map;
-
-import net.sf.json.JSONObject;
+import org.json.JSONObject;
 
 /**
  * Represents a GreenHopper marker (a sprint that hasn't started).
@@ -47,10 +45,8 @@ public class Marker extends GreenHopperResource {
     }
 
     private void deserialise(JSONObject json) {
-        Map map = json;
-
-        id = Field.getInteger(map.get("id"));
-        name = Field.getString(map.get("name"));
+        id = Field.getInteger(json.opt("id"));
+        name = Field.getString(json.opt("name"));
     }
 
     @Override

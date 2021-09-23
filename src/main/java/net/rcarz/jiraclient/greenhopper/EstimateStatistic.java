@@ -23,7 +23,7 @@ import net.rcarz.jiraclient.Field;
 
 import java.util.Map;
 
-import net.sf.json.JSONObject;
+import org.json.JSONObject;
 
 /**
  * GreenHopper estimate statistics for rapid views.
@@ -40,17 +40,15 @@ public class EstimateStatistic {
      * @param json JSON payload
      */
     protected EstimateStatistic(JSONObject json) {
-        Map map = json;
+        statFieldId = Field.getString(json.opt("statFieldId"));
 
-        statFieldId = Field.getString(map.get("statFieldId"));
+        if (json.has("statFieldValue") &&
+        		json.get("statFieldValue") instanceof JSONObject) {
 
-        if (map.containsKey("statFieldValue") &&
-            map.get("statFieldValue") instanceof JSONObject) {
+        	JSONObject val = (JSONObject)json.get("statFieldValue");
 
-            Map val = (Map)json.get("statFieldValue");
-
-            statFieldValue = Field.getDouble(val.get("value"));
-            statFieldText = Field.getString(val.get("text"));
+            statFieldValue = Field.getDouble(val.opt("value"));
+            statFieldText = Field.getString(val.opt("text"));
         }
     }
 

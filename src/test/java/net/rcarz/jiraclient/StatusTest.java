@@ -1,6 +1,6 @@
 package net.rcarz.jiraclient;
 
-import net.sf.json.JSONObject;
+import org.json.JSONObject;
 import org.junit.Test;
 import org.powermock.api.mockito.PowerMockito;
 
@@ -30,7 +30,7 @@ public class StatusTest {
     @Test
     public void testGetStatus() throws Exception {
         final RestClient restClient = PowerMockito.mock(RestClient.class);
-        when(restClient.get(anyString())).thenReturn(getTestJSON());
+        when(restClient.getMap(anyString())).thenReturn(getTestJSON());
         Status status = Status.get(restClient,"someID");
         assertEquals(status.getDescription(), description);
         assertEquals(status.getIconUrl(), iconURL);
@@ -41,7 +41,7 @@ public class StatusTest {
     @Test(expected = JiraException.class)
     public void testJiraExceptionFromRestException() throws Exception {
         final RestClient mockRestClient = PowerMockito.mock(RestClient.class);
-        when(mockRestClient.get(anyString())).thenThrow(RestException.class);
+        when(mockRestClient.getMap(anyString())).thenThrow(RestException.class);
         Status.get(mockRestClient, "issueNumber");
     }
 

@@ -26,7 +26,7 @@ import net.rcarz.jiraclient.RestClient;
 
 import java.util.Map;
 
-import net.sf.json.JSONObject;
+import org.json.JSONObject;
 
 /**
  * Represents a GreenHopper JIRA project.
@@ -50,11 +50,9 @@ public class RapidViewProject extends GreenHopperResource {
     }
 
     private void deserialise(JSONObject json) {
-        Map map = json;
-
-        id = Field.getInteger(map.get("id"));
-        key = Field.getString(map.get("key"));
-        name = Field.getString(map.get("name"));
+        id = Field.getInteger(json.opt("id"));
+        key = Field.getString(json.opt("key"));
+        name = Field.getString(json.opt("name"));
     }
 
     /**

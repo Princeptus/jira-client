@@ -20,10 +20,7 @@
 package net.rcarz.jiraclient;
 
 import java.util.Date;
-import java.util.Map;
-
-import net.sf.json.JSON;
-import net.sf.json.JSONObject;
+import org.json.JSONObject;
 
 /**
  * Represents an issue work log.
@@ -53,18 +50,16 @@ public class WorkLog extends Resource {
     }
 
     private void deserialise(JSONObject json) {
-        Map map = json;
-
-        self = Field.getString(map.get("self"));
-        id = Field.getString(map.get("id"));
-        author = Field.getResource(User.class, map.get("author"), restclient);
-        comment = Field.getString(map.get("comment"));
-        created = Field.getDateTime(map.get("created"));
-        updated = Field.getDateTime(map.get("updated"));
-        updateAuthor = Field.getResource(User.class, map.get("updateAuthor"), restclient);
-        started = Field.getDateTime(map.get("started"));
-        timeSpent = Field.getString(map.get("timeSpent"));
-        timeSpentSeconds = Field.getInteger(map.get("timeSpentSeconds"));
+        self = Field.getString(json.opt("self"));
+        id = Field.getString(json.opt("id"));
+        author = Field.getResource(User.class, json.opt("author"), restclient);
+        comment = Field.getString(json.opt("comment"));
+        created = Field.getDateTime(json.opt("created"));
+        updated = Field.getDateTime(json.opt("updated"));
+        updateAuthor = Field.getResource(User.class, json.opt("updateAuthor"), restclient);
+        started = Field.getDateTime(json.opt("started"));
+        timeSpent = Field.getString(json.opt("timeSpent"));
+        timeSpentSeconds = Field.getInteger(json.opt("timeSpentSeconds"));
     }
 
     /**
@@ -81,18 +76,18 @@ public class WorkLog extends Resource {
     public static WorkLog get(RestClient restclient, String issue, String id)
         throws JiraException {
 
-        JSON result = null;
+        JSONObject result = null;
 
         try {
-            result = restclient.get(getBaseUri() + "issue/" + issue + "/worklog/" + id);
+            result = restclient.getMap(getBaseUri() + "issue/" + issue + "/worklog/" + id);
         } catch (Exception ex) {
             throw new JiraException("Failed to retrieve work log " + id + " on issue " + issue, ex);
         }
 
-        if (!(result instanceof JSONObject))
+        if (result == null)
             throw new JiraException("JSON payload is malformed");
 
-        return new WorkLog(restclient, (JSONObject)result);
+        return new WorkLog(restclient, result);
     }
 
     @Override

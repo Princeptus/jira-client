@@ -29,9 +29,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import net.sf.json.JSON;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 /**
  * GreenHopper backlog data.
@@ -66,62 +65,60 @@ public class Backlog {
     }
 
     private void deserialise(JSONObject json) {
-        Map map = json;
-
         issues = GreenHopperField.getResourceArray(
             SprintIssue.class,
-            map.get("issues"),
+            json.opt("issues"),
             restclient);
-        rankCustomFieldId = Field.getInteger(map.get("rankCustomFieldId"));
+        rankCustomFieldId = Field.getInteger(json.opt("rankCustomFieldId"));
         sprints = GreenHopperField.getResourceArray(
             Sprint.class,
-            map.get("sprints"),
+            json.opt("sprints"),
             restclient);
         projects = GreenHopperField.getResourceArray(
             RapidViewProject.class,
-            map.get("projects"),
+            json.opt("projects"),
             restclient);
         markers = GreenHopperField.getResourceArray(
             Marker.class,
-            map.get("markers"),
+            json.opt("markers"),
             restclient);
-        canManageSprints = Field.getBoolean(map.get("canManageSprints"));
-        maxIssuesExceeded = Field.getBoolean(map.get("maxIssuesExceeded"));
-        queryResultLimit = Field.getInteger(map.get("queryResultLimit"));
+        canManageSprints = Field.getBoolean(json.opt("canManageSprints"));
+        maxIssuesExceeded = Field.getBoolean(json.opt("maxIssuesExceeded"));
+        queryResultLimit = Field.getInteger(json.opt("queryResultLimit"));
 
-        if (map.containsKey("epicData") && map.get("epicData") instanceof JSONObject) {
-            Map epicData = (Map)map.get("epicData");
+        if (json.has("epicData") && json.get("epicData") instanceof JSONObject) {
+            JSONObject epicData = (JSONObject) json.get("epicData");
 
-            epics = GreenHopperField.getResourceArray(Epic.class, epicData.get("epics"), restclient);
-            canEditEpics = Field.getBoolean(epicData.get("canEditEpics"));
+            epics = GreenHopperField.getResourceArray(Epic.class, epicData.opt("epics"), restclient);
+            canEditEpics = Field.getBoolean(epicData.opt("canEditEpics"));
         }
 
-        if (map.containsKey("versionData") && map.get("versionData") instanceof JSONObject) {
-            Map verData = (JSONObject)map.get("versionData");
+        if (json.has("versionData") && json.get("versionData") instanceof JSONObject) {
+            JSONObject verData = (JSONObject)json.get("versionData");
 
-            if (verData.containsKey("versionsPerProject") &&
+            if (verData.has("versionsPerProject") &&
                 verData.get("versionsPerProject") instanceof JSONObject) {
 
-                Map verMap = (Map)verData.get("versionsPerProject");
+                JSONObject verMap = (JSONObject)verData.get("versionsPerProject");
                 versionsPerProject = new HashMap<String, List<RapidViewVersion>>();
 
-                for (Map.Entry<String, Object> kvp : 
-                     (Iterable<Map.Entry<String, Object>>)verMap.entrySet()) {
+                for (String key : verMap.keySet()) {
+                    Object value = verMap.get(key);
 
-                    if (!(kvp.getValue() instanceof JSONArray))
+                    if (!(value instanceof JSONArray))
                         continue;
 
                     List<RapidViewVersion> versions = new ArrayList<RapidViewVersion>();
 
-                    for (Object item : (JSONArray)kvp.getValue()) {
+                    for (Object item : (JSONArray) value) {
                         if (!(item instanceof JSONObject))
                             continue;
 
-                        RapidViewVersion ver = new RapidViewVersion(restclient, (JSONObject)item);
+                        RapidViewVersion ver = new RapidViewVersion(restclient, (JSONObject) item);
                         versions.add(ver);
                     }
 
-                    versionsPerProject.put(kvp.getKey(), versions);
+                    versionsPerProject.put(key, versions);
                 }
             }
         }
@@ -160,23 +157,23 @@ public class Backlog {
         throws JiraException {
 
         final int rvId = rv.getId();
-        JSON result = null;
+        JSONObject result = null;
 
         try {
             URI reporturi = restclient.buildURI(
                 GreenHopperResource.RESOURCE_URI + "xboard/plan/backlog/data",
-                new HashMap<String, String>() {{
+                new HashMap<String, String>() {
+                    private static final long serialVersionUID = 1L;
+
+                {
                     put("rapidViewId", Integer.toString(rvId));
                 }});
-            result = restclient.get(reporturi);
+            result = restclient.getMap(reporturi);
         } catch (Exception ex) {
             throw new JiraException("Failed to retrieve backlog data", ex);
         }
 
-        if (!(result instanceof JSONObject))
-            throw new JiraException("JSON payload is malformed");
-
-        return new Backlog(restclient, (JSONObject)result);
+        return new Backlog(restclient, result);
     }
 
     public List<SprintIssue> getIssues() {

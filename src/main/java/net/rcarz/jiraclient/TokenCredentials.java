@@ -19,10 +19,8 @@
 
 package net.rcarz.jiraclient;
 
-import net.sf.json.JSON;
-import net.sf.json.JSONObject;
-
 import org.apache.http.HttpRequest;
+import org.json.JSONObject;
 
 /**
  * Basic HTTP authentication credentials.
@@ -75,14 +73,11 @@ public class TokenCredentials implements ICredentials {
                 JSONObject req = new JSONObject();
                 req.put("username", username);
                 req.put("password", password);
-                JSON json = client.post(Resource.getAuthUri() + "session", req);
-                if (json instanceof JSONObject) {
-	                JSONObject jso = (JSONObject) json;
-	                jso = (JSONObject) jso.get("session");
-	                cookieName = (String)jso.get("name");
-	                token = (String)jso.get("value");
-	                
-                }
+                JSONObject json = client.post(Resource.getAuthUri() + "session", req);
+                
+                JSONObject session = (JSONObject) json.opt("session");
+                cookieName = session.getString("name");
+                token = session.getString("value");
             } catch (Exception ex) {
                 throw new JiraException("Failed to login", ex);
             }

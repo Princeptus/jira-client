@@ -24,11 +24,8 @@ import net.rcarz.jiraclient.JiraException;
 import net.rcarz.jiraclient.RestClient;
 
 import java.util.List;
-import java.util.Map;
-
-import net.sf.json.JSON;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 /**
  * Represents a GreenHopper Rapid Board.
@@ -53,12 +50,10 @@ public class RapidView extends GreenHopperResource {
     }
 
     private void deserialise(JSONObject json) {
-        Map map = json;
-
-        id = Field.getInteger(map.get("id"));
-        name = Field.getString(map.get("name"));
-        canEdit = Field.getBoolean(map.get("canEdit"));
-        sprintSupportEnabled = Field.getBoolean(map.get("sprintSupportEnabled"));
+        id = Field.getInteger(json.opt("id"));
+        name = Field.getString(json.opt("name"));
+        canEdit = Field.getBoolean(json.opt("canEdit"));
+        sprintSupportEnabled = Field.getBoolean(json.opt("sprintSupportEnabled"));
     }
 
     /**
@@ -74,18 +69,18 @@ public class RapidView extends GreenHopperResource {
     public static RapidView get(RestClient restclient, int id)
         throws JiraException {
 
-        JSON result = null;
+        JSONObject result = null;
 
         try {
-            result = restclient.get(RESOURCE_URI + "rapidview/" + id);
+            result = restclient.getMap(RESOURCE_URI + "rapidview/" + id);
         } catch (Exception ex) {
             throw new JiraException("Failed to retrieve rapid view " + id, ex);
         }
 
-        if (!(result instanceof JSONObject))
+        if (result == null)
             throw new JiraException("JSON payload is malformed");
 
-        return new RapidView(restclient, (JSONObject)result);
+        return new RapidView(restclient, result);
     }
 
     /**
@@ -100,25 +95,23 @@ public class RapidView extends GreenHopperResource {
     public static List<RapidView> getAll(RestClient restclient)
         throws JiraException {
 
-        JSON result = null;
+        JSONObject result = null;
 
         try {
-            result = restclient.get(RESOURCE_URI + "rapidview");
+            result = restclient.getMap(RESOURCE_URI + "rapidview");
         } catch (Exception ex) {
             throw new JiraException("Failed to retrieve rapid views", ex);
         }
 
-        if (!(result instanceof JSONObject))
+        if (result == null)
             throw new JiraException("JSON payload is malformed");
 
-        JSONObject jo = (JSONObject)result;
-
-        if (!jo.containsKey("views") || !(jo.get("views") instanceof JSONArray))
+        if (!result.has("views") || !(result.get("views") instanceof JSONArray))
             throw new JiraException("Rapid View result is malformed");
 
         return GreenHopperField.getResourceArray(
             RapidView.class,
-            jo.get("views"),
+            result.get("views"),
             restclient
         );
     }
@@ -131,25 +124,23 @@ public class RapidView extends GreenHopperResource {
      * @throws JiraException when the retrieval fails
      */
     public List<Sprint> getSprints() throws JiraException {
-        JSON result = null;
+        JSONObject result = null;
 
         try {
-            result = restclient.get(RESOURCE_URI + "sprintquery/" + id);
+            result = restclient.getMap(RESOURCE_URI + "sprintquery/" + id);
         } catch (Exception ex) {
             throw new JiraException("Failed to retrieve sprints", ex);
         }
 
-        if (!(result instanceof JSONObject))
+        if (result == null)
             throw new JiraException("JSON payload is malformed");
 
-        JSONObject jo = (JSONObject)result;
-
-        if (!jo.containsKey("sprints") || !(jo.get("sprints") instanceof JSONArray))
+        if (!result.has("sprints") || !(result.get("sprints") instanceof JSONArray))
             throw new JiraException("Sprints result is malformed");
 
         return GreenHopperField.getResourceArray(
             Sprint.class,
-            jo.get("sprints"),
+            result.get("sprints"),
             restclient
         );
     }

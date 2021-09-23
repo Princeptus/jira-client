@@ -30,10 +30,8 @@ import java.util.Map;
 import org.apache.http.client.HttpClient;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.conn.PoolingClientConnectionManager;
-
-import net.sf.json.JSON;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 /**
  * A simple JIRA REST client.
@@ -392,11 +390,10 @@ public class JiraClient {
     public List<Priority> getPriorities() throws JiraException {
         try {
             URI uri = restclient.buildURI(Resource.getBaseUri() + "priority");
-            JSON response = restclient.get(uri);
-            JSONArray prioritiesArray = JSONArray.fromObject(response);
+            JSONArray prioritiesArray = restclient.getArray(uri);
 
-            List<Priority> priorities = new ArrayList<Priority>(prioritiesArray.size());
-            for (int i = 0; i < prioritiesArray.size(); i++) {
+            List<Priority> priorities = new ArrayList<Priority>(prioritiesArray.length());
+            for (int i = 0; i < prioritiesArray.length(); i++) {
                 JSONObject p = prioritiesArray.getJSONObject(i);
                 priorities.add(new Priority(restclient, p));
             }
@@ -420,7 +417,7 @@ public class JiraClient {
      */
     public List<CustomFieldOption> getCustomFieldAllowedValues(String field, String project, String issueType) throws JiraException {
         JSONObject createMetadata = (JSONObject) Issue.getCreateMetadata(restclient, project, issueType);
-        JSONObject fieldMetadata = (JSONObject) createMetadata.get(field);
+        JSONObject fieldMetadata = (JSONObject) createMetadata.opt(field);
         List<CustomFieldOption> customFieldOptions = Field.getResourceArray(
                 CustomFieldOption.class,
                 fieldMetadata.get("allowedValues"),
@@ -441,7 +438,7 @@ public class JiraClient {
      */
     public List<Component> getComponentsAllowedValues(String project, String issueType) throws JiraException {
         JSONObject createMetadata = (JSONObject) Issue.getCreateMetadata(restclient, project, issueType);
-        JSONObject fieldMetadata = (JSONObject) createMetadata.get(Field.COMPONENTS);
+        JSONObject fieldMetadata = (JSONObject) createMetadata.opt(Field.COMPONENTS);
         List<Component> componentOptions = Field.getResourceArray(
                 Component.class,
                 fieldMetadata.get("allowedValues"),
@@ -467,11 +464,10 @@ public class JiraClient {
     public List<Project> getProjects() throws JiraException {
         try {
             URI uri = restclient.buildURI(Resource.getBaseUri() + "project");
-            JSON response = restclient.get(uri);
-            JSONArray projectsArray = JSONArray.fromObject(response);
+            JSONArray projectsArray = restclient.getArray(uri);
 
-            List<Project> projects = new ArrayList<Project>(projectsArray.size());
-            for (int i = 0; i < projectsArray.size(); i++) {
+            List<Project> projects = new ArrayList<Project>(projectsArray.length());
+            for (int i = 0; i < projectsArray.length(); i++) {
                 JSONObject p = projectsArray.getJSONObject(i);
                 projects.add(new Project(restclient, p));
             }
@@ -491,8 +487,8 @@ public class JiraClient {
     public Project getProject(String key) throws JiraException {
         try {
             URI uri = restclient.buildURI(Resource.getBaseUri() + "project/" + key);
-            JSON response = restclient.get(uri);
-            return new Project(restclient, (JSONObject) response);
+            JSONObject response = restclient.getMap(uri);
+            return new Project(restclient, response);
         } catch (Exception ex) {
             throw new JiraException(ex.getMessage(), ex);
         }
@@ -506,11 +502,10 @@ public class JiraClient {
     public List<IssueType> getIssueTypes() throws JiraException {
         try {
             URI uri = restclient.buildURI(Resource.getBaseUri() + "issuetype");
-            JSON response = restclient.get(uri);
-            JSONArray issueTypeArray = JSONArray.fromObject(response);
+            JSONArray issueTypeArray = restclient.getArray(uri);
 
-            List<IssueType> issueTypes = new ArrayList<IssueType>(issueTypeArray.size());
-            for (int i = 0; i < issueTypeArray.size(); i++) {
+            List<IssueType> issueTypes = new ArrayList<IssueType>(issueTypeArray.length());
+            for (int i = 0; i < issueTypeArray.length(); i++) {
                 JSONObject it = issueTypeArray.getJSONObject(i);
                 issueTypes.add(new IssueType(restclient, it));
             }
@@ -567,20 +562,20 @@ public class JiraClient {
     public ArrayList<IssueHistory> getIssueChangeLog(Issue issue) throws JiraException {
         try {
             ArrayList<IssueHistory> changes = null;
-            JSON response = getNextPortion(issue, 0);
+            JSONObject response = getNextPortion(issue, 0);
 
             while (true) {
-                JSONObject object = JSONObject.fromObject(response);
-                Object opers = object.get("changelog");
-                object = JSONObject.fromObject(opers);
-                Integer totalObj = (Integer)object.get("total");
-                JSONArray histories = JSONArray.fromObject(object.get("histories"));
+                JSONObject object = new JSONObject(response);
+                Object opers = object.opt("changelog");
+                object = new JSONObject(opers);
+                Integer totalObj = object.optInt("total");
+                JSONArray histories = new JSONArray(object.get("histories"));
 
                 if (changes == null) {
                     changes = new ArrayList<IssueHistory>(totalObj);
                 }
 
-                for (int i = 0; i < histories.size(); i++) {
+                for (int i = 0; i < histories.length(); i++) {
                     JSONObject p = histories.getJSONObject(i);
                     changes.add(new IssueHistory(restclient, p));
                 }
@@ -598,7 +593,7 @@ public class JiraClient {
         }
     }
 
-    private JSON getNextPortion(Issue issue, Integer startAt)
+    private JSONObject getNextPortion(Issue issue, Integer startAt)
             throws URISyntaxException, RestException, IOException {
 
         Map<String, String> params = new HashMap<String, String>();
@@ -608,6 +603,6 @@ public class JiraClient {
 
         params.put("expand","changelog.fields");
         URI uri = restclient.buildURI(Issue.getBaseUri() + "issue/" + issue.id, params);
-        return restclient.get(uri);
+        return restclient.getMap(uri);
     }
 }

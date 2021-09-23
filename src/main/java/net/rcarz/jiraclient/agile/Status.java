@@ -19,10 +19,11 @@
 
 package net.rcarz.jiraclient.agile;
 
+import org.json.JSONObject;
+
 import net.rcarz.jiraclient.Field;
 import net.rcarz.jiraclient.JiraException;
 import net.rcarz.jiraclient.RestClient;
-import net.sf.json.JSONObject;
 
 /**
  * Represents an Agile Status.
@@ -53,7 +54,7 @@ public class Status extends AgileResource {
     void deserialize(JSONObject json) throws JiraException {
         super.deserialize(json);
 
-        this.description = Field.getString(json.get("description"));
+        this.description = Field.getString(json.opt("description"));
     }
 
     public String getDescription() {

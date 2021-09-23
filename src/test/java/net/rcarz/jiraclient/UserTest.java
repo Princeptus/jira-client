@@ -1,6 +1,6 @@
 package net.rcarz.jiraclient;
 
-import net.sf.json.JSONObject;
+import org.json.JSONObject;
 import org.junit.Test;
 import org.powermock.api.mockito.PowerMockito;
 
@@ -73,7 +73,7 @@ public class UserTest {
     public void testGetUserJSONError() throws Exception {
 
         final RestClient restClient = PowerMockito.mock(RestClient.class);
-        when(restClient.get(anyString(),anyMap())).thenReturn(null);
+        when(restClient.getMap(anyString(),anyMap())).thenReturn(null);
          User.get(restClient, "username");
 
     }
@@ -82,7 +82,7 @@ public class UserTest {
     public void testGetUserRestError() throws Exception {
 
         final RestClient restClient = PowerMockito.mock(RestClient.class);
-        when(restClient.get(anyString(),anyMap())).thenThrow(Exception.class);
+        when(restClient.getMap(anyString(),anyMap())).thenThrow(Exception.class);
        User.get(restClient, "username");
     }
 
@@ -90,7 +90,7 @@ public class UserTest {
     public void testGetUser() throws Exception {
 
         final RestClient restClient = PowerMockito.mock(RestClient.class);
-        when(restClient.get(anyString(),anyMap())).thenReturn(getTestJSON());
+        when(restClient.getMap(anyString(),anyMap())).thenReturn(getTestJSON());
         final User user = User.get(restClient, "username");
 
         assertEquals(user.getName(), username);

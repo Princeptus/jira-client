@@ -1,6 +1,6 @@
 package net.rcarz.jiraclient;
 
-import net.sf.json.JSONObject;
+import org.json.JSONObject;
 import org.junit.Test;
 import org.powermock.api.mockito.PowerMockito;
 
@@ -31,21 +31,21 @@ public class WatchesTest {
     @Test(expected = JiraException.class)
     public void testGetWatchersNullReturned() throws Exception {
         final RestClient restClient = PowerMockito.mock(RestClient.class);
-        PowerMockito.when(restClient.get(anyString())).thenReturn(null);
+        PowerMockito.when(restClient.getMap(anyString())).thenReturn(null);
         Watches.get(restClient, "someID");
     }
 
     @Test(expected = JiraException.class)
     public void testGetWatchersGetThrows() throws Exception {
         final RestClient restClient = PowerMockito.mock(RestClient.class);
-        PowerMockito.when(restClient.get(anyString())).thenThrow(Exception.class);
+        PowerMockito.when(restClient.getMap(anyString())).thenThrow(Exception.class);
         Watches.get(restClient, "someID");
     }
 
     @Test
     public void testGetWatchers() throws Exception {
         final RestClient restClient = PowerMockito.mock(RestClient.class);
-        PowerMockito.when(restClient.get(anyString())).thenReturn(getTestJSON());
+        PowerMockito.when(restClient.getMap(anyString())).thenReturn(getTestJSON());
         final Watches watches = Watches.get(restClient, "someID");
 
         assertFalse(watches.isWatching());

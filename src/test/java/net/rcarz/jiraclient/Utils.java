@@ -1,12 +1,11 @@
 package net.rcarz.jiraclient;
 
-import net.sf.json.JSONObject;
-import net.sf.json.JSONSerializer;
+import org.json.JSONObject;
 
 public class Utils {
 
     public static JSONObject getTestIssue() {
-        JSONObject jsonObject = (JSONObject) JSONSerializer.toJSON("{\n" +
+        JSONObject jsonObject = new JSONObject("{\n" +
         "  \"expand\": \"renderedFields,names,schema,transitions,operations,editmeta,changelog\",\n" +
         "  \"id\": \"10742\",\n" +
         "  \"self\": \"https://brainbubble.atlassian.net/rest/api/latest/issue/10742\",\n" +
@@ -203,7 +202,7 @@ public class Utils {
     }
 
     public static JSONObject getTestIssueWorklogs() {
-        JSONObject jsonObject = (JSONObject) JSONSerializer.toJSON("{\n" +
+        JSONObject jsonObject = new JSONObject("{\n" +
                 "   \"startAt\":0,\n" +
                 "   \"maxResults\":2,\n" +
                 "   \"total\":2,\n" +
@@ -282,7 +281,7 @@ public class Utils {
     }
 
     public static JSONObject getTestProject() {
-        JSONObject jsonObject = (JSONObject) JSONSerializer.toJSON("{" +
+        JSONObject jsonObject = new JSONObject("{" +
                 "    \"expand\": \"description,lead,url,projectKeys\"," +
                 "    \"self\": \"http://www.example.com/jira/rest/api/2/project/EX\"," +
                 "    \"id\": \"10000\"," +

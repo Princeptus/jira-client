@@ -19,11 +19,9 @@
 
 package net.rcarz.jiraclient;
 
-import net.sf.json.JSONObject;
-
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
+import org.json.JSONObject;
 
 /**
  * Contains information about an issue change log entry. Change log entries are
@@ -65,12 +63,10 @@ public class ChangeLogEntry extends Resource {
      * @param json the json payload
      */
     private void deserialise(JSONObject json) {
-        Map map = json;
-
-        id = Field.getString(map.get("id"));
-        author = Field.getResource(User.class, map.get("author"), restclient);
-        created = Field.getDateTime(map.get("created"));
-        items = Field.getResourceArray(ChangeLogItem.class, map.get(
+        id = Field.getString(json.opt("id"));
+        author = Field.getResource(User.class, json.opt("author"), restclient);
+        created = Field.getDateTime(json.opt("created"));
+        items = Field.getResourceArray(ChangeLogItem.class, json.opt(
                 Field.CHANGE_LOG_ITEMS), restclient);
     }
 

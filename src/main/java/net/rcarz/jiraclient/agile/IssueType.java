@@ -19,10 +19,11 @@
 
 package net.rcarz.jiraclient.agile;
 
+import org.json.JSONObject;
+
 import net.rcarz.jiraclient.Field;
 import net.rcarz.jiraclient.JiraException;
 import net.rcarz.jiraclient.RestClient;
-import net.sf.json.JSONObject;
 
 /**
  * Represents an Agile IssueType.
@@ -54,8 +55,8 @@ public class IssueType extends AgileResource {
     void deserialize(JSONObject json) throws JiraException {
         super.deserialize(json);
 
-        this.description = Field.getString(json.get("description"));
-        this.subTask = Field.getBoolean(json.get("subtask"));
+        this.description = Field.getString(json.opt("description"));
+        this.subTask = Field.getBoolean(json.opt("subtask"));
     }
 
     public String getDescription() {

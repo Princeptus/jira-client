@@ -1,6 +1,5 @@
 package net.rcarz.jiraclient;
 
-import net.sf.json.JSONObject;
 import org.junit.Test;
 import org.powermock.api.mockito.PowerMockito;
 
@@ -9,6 +8,8 @@ import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertSame;
 import static org.mockito.Matchers.anyString;
 import static org.powermock.api.mockito.PowerMockito.when;
+
+import org.json.JSONObject;
 
 
 public class IssueTypeTest {
@@ -37,7 +38,7 @@ public class IssueTypeTest {
         fields.put("key2","key2Value");
         testJSON.put("fields", fields);
         IssueType issueType = new IssueType(null, testJSON);
-        assertEquals(2,issueType.getFields().size());
+        assertEquals(2,issueType.getFields().length());
         assertSame("key1Value",issueType.getFields().getString("key1"));
         assertSame("key2Value",issueType.getFields().getString("key2"));
 
@@ -46,7 +47,7 @@ public class IssueTypeTest {
     @Test
     public void testLoadIssueType() throws Exception {
         final RestClient restClient = PowerMockito.mock(RestClient.class);
-        when(restClient.get(anyString())).thenReturn(getTestJSON());
+        when(restClient.getMap(anyString())).thenReturn(getTestJSON());
         IssueType issueType = IssueType.get(restClient,"someID");
         assertFalse(issueType.isSubtask());
         assertEquals(issueType.getName(), "Story");
@@ -59,7 +60,7 @@ public class IssueTypeTest {
     @Test(expected = JiraException.class)
     public void testJiraExceptionFromRestException() throws Exception {
         final RestClient mockRestClient = PowerMockito.mock(RestClient.class);
-        when(mockRestClient.get(anyString())).thenThrow(RestException.class);
+        when(mockRestClient.getMap(anyString())).thenThrow(RestException.class);
         IssueType.get(mockRestClient, "issueNumber");
     }
 

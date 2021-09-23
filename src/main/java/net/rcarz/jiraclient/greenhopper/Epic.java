@@ -27,7 +27,7 @@ import net.rcarz.jiraclient.RestClient;
 import java.util.List;
 import java.util.Map;
 
-import net.sf.json.JSONObject;
+import org.json.JSONObject;
 
 /**
  * Represents a GreenHopper epic issue.
@@ -52,11 +52,9 @@ public class Epic extends GreenHopperIssue {
     }
 
     private void deserialise(JSONObject json) {
-        Map map = json;
-
-        epicLabel = Field.getString(map.get("epicLabel"));
-        epicColour = Field.getString(map.get("epicColor"));
-        epicStats = GreenHopperField.getEpicStats(map.get("epicStats"));
+        epicLabel = Field.getString(json.opt("epicLabel"));
+        epicColour = Field.getString(json.opt("epicColor"));
+        epicStats = GreenHopperField.getEpicStats(json.opt("epicStats"));
     }
 
     public String getEpicLabel() {

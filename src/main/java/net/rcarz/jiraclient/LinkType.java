@@ -19,10 +19,7 @@
 
 package net.rcarz.jiraclient;
 
-import java.util.Map;
-
-import net.sf.json.JSON;
-import net.sf.json.JSONObject;
+import org.json.JSONObject;
 
 /**
  * Represents an issue link type.
@@ -47,13 +44,11 @@ public class LinkType extends Resource {
     }
 
     private void deserialise(JSONObject json) {
-        Map map = json;
-
-        self = Field.getString(map.get("self"));
-        id = Field.getString(map.get("id"));
-        name = Field.getString(map.get("name"));
-        inward = Field.getString(map.get("inward"));
-        outward = Field.getString(map.get("outward"));
+        self = Field.getString(json.opt("self"));
+        id = Field.getString(json.opt("id"));
+        name = Field.getString(json.opt("name"));
+        inward = Field.getString(json.opt("inward"));
+        outward = Field.getString(json.opt("outward"));
     }
 
     /**
@@ -69,18 +64,17 @@ public class LinkType extends Resource {
     public static LinkType get(RestClient restclient, String id)
         throws JiraException {
 
-        JSON result = null;
+        JSONObject result = null;
 
         try {
-            result = restclient.get(getBaseUri() + "issueLinkType/" + id);
+            result = restclient.getMap(getBaseUri() + "issueLinkType/" + id);
         } catch (Exception ex) {
             throw new JiraException("Failed to retrieve issue link type " + id, ex);
         }
 
-        if (!(result instanceof JSONObject))
+        if (result == null)
             throw new JiraException("JSON payload is malformed");
-
-        return new LinkType(restclient, (JSONObject)result);
+        return new LinkType(restclient, result);
     }
 
     @Override

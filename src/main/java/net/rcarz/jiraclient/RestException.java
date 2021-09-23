@@ -26,7 +26,8 @@ import org.apache.http.Header;
  */
 public class RestException extends Exception {
 
-    private int status;
+	private static final long serialVersionUID = 1L;
+	private int status;
     private String result;
     private Header[] headers;
 

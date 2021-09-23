@@ -19,10 +19,11 @@
 
 package net.rcarz.jiraclient.agile;
 
+import org.json.JSONObject;
+
 import net.rcarz.jiraclient.Field;
 import net.rcarz.jiraclient.JiraException;
 import net.rcarz.jiraclient.RestClient;
-import net.sf.json.JSONObject;
 
 /**
  * Represents an Agile User.
@@ -55,10 +56,10 @@ public class User extends AgileResource {
     @Override
     void deserialize(JSONObject json) throws JiraException {
         super.deserialize(json);
-        this.emailAddress = Field.getString(json.get("emailAddress"));
-        this.displayName = Field.getString(json.get("displayName"));
-        this.active = Field.getBoolean(json.get("active"));
-        this.timeZone = Field.getString(json.get("timeZone"));
+        this.emailAddress = Field.getString(json.opt("emailAddress"));
+        this.displayName = Field.getString(json.opt("displayName"));
+        this.active = Field.getBoolean(json.opt("active"));
+        this.timeZone = Field.getString(json.opt("timeZone"));
     }
 
     @Override

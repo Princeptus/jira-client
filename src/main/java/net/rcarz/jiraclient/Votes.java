@@ -19,10 +19,7 @@
 
 package net.rcarz.jiraclient;
 
-import net.sf.json.JSON;
-import net.sf.json.JSONObject;
-
-import java.util.Map;
+import org.json.JSONObject;
 
 /**
  * Represents issue votes.
@@ -46,12 +43,10 @@ public class Votes extends Resource {
     }
 
     private void deserialise(JSONObject json) {
-        Map map = json;
-
-        self = Field.getString(map.get("self"));
-        id = Field.getString(map.get("id"));
-        votes = Field.getInteger(map.get("votes"));
-        hasVoted = Field.getBoolean(map.get("hasVoted"));
+        self = Field.getString(json.opt("self"));
+        id = Field.getString(json.opt("id"));
+        votes = Field.getInteger(json.opt("votes"));
+        hasVoted = Field.getBoolean(json.opt("hasVoted"));
     }
 
     /**
@@ -67,18 +62,17 @@ public class Votes extends Resource {
     public static Votes get(RestClient restclient, String issue)
         throws JiraException {
 
-        JSON result = null;
+        JSONObject result = null;
 
         try {
-            result = restclient.get(getBaseUri() + "issue/" + issue + "/votes");
+            result = restclient.getMap(getBaseUri() + "issue/" + issue + "/votes");
         } catch (Exception ex) {
             throw new JiraException("Failed to retrieve votes for issue " + issue, ex);
         }
 
-        if (!(result instanceof JSONObject))
+        if (result == null)
             throw new JiraException("JSON payload is malformed");
-
-        return new Votes(restclient, (JSONObject)result);
+        return new Votes(restclient, result);
     }
 
     @Override

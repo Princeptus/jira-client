@@ -24,7 +24,7 @@ import net.rcarz.jiraclient.RestClient;
 
 import java.util.Map;
 
-import net.sf.json.JSONObject;
+import org.json.JSONObject;
 
 /**
  * Represents a GreenHopper sprint issue.
@@ -48,10 +48,8 @@ public class SprintIssue extends GreenHopperIssue {
     }
 
     private void deserialise(JSONObject json) {
-        Map map = json;
-
-        epic = Field.getString(map.get("epic"));
-        estimateStatistic = GreenHopperField.getEstimateStatistic(map.get("estimateStatistic"));
+        epic = Field.getString(json.opt("epic"));
+        estimateStatistic = GreenHopperField.getEstimateStatistic(json.opt("estimateStatistic"));
     }
 
     public String getEpic() {

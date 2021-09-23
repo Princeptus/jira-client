@@ -22,10 +22,11 @@ package net.rcarz.jiraclient.agile;
 import net.rcarz.jiraclient.Field;
 import net.rcarz.jiraclient.JiraException;
 import net.rcarz.jiraclient.RestClient;
-import net.sf.json.JSONObject;
 
 import java.util.Date;
 import java.util.List;
+
+import org.json.JSONObject;
 
 /**
  * Represents an Agile Issue.
@@ -93,27 +94,27 @@ public class Issue extends AgileResource {
     @Override
     protected void deserialize(JSONObject json) throws JiraException {
         super.deserialize(json);
-        this.key = Field.getString(json.get("key"));
+        this.key = Field.getString(json.opt("key"));
 
         // Extract from Field sub JSONObject
-        if (json.containsKey("fields")) {
+        if (json.has("fields")) {
             JSONObject fields = (JSONObject) json.get("fields");
-            setName(Field.getString(fields.get("summary")));
-            this.flagged = Field.getBoolean(fields.get("flagged"));
+            setName(Field.getString(fields.opt("summary")));
+            this.flagged = Field.getBoolean(fields.opt("flagged"));
             this.sprint = getSubResource(Sprint.class, fields, "sprint");
             this.closedSprints = getSubResourceArray(Sprint.class, fields, "closedSprint");
-            this.description = Field.getString(fields.get("description"));
+            this.description = Field.getString(fields.opt("description"));
             this.project = getSubResource(Project.class, fields, "project");
             this.comments = getSubResourceArray(Comment.class, fields, "comment");
             this.epic = getSubResource(Epic.class, fields, "epic");
             this.worklogs = getSubResourceArray(Worklog.class, fields, "worklog");
             this.timeTracking = getSubResource(TimeTracking.class, fields, "timetracking");
-            this.environment = Field.getString(fields.get("environment"));
+            this.environment = Field.getString(fields.opt("environment"));
             this.issueType = getSubResource(IssueType.class, fields, "issuetype");
             this.status = getSubResource(Status.class, fields, "status");
             this.resolution = getSubResource(Resolution.class, fields, "resolution");
-            this.created = Field.getDateTime(fields.get("created"));
-            this.updated = Field.getDateTime(fields.get("updated"));
+            this.created = Field.getDateTime(fields.opt("created"));
+            this.updated = Field.getDateTime(fields.opt("updated"));
             this.priority = getSubResource(Priority.class, fields, "priority");
             this.assignee = getSubResource(User.class, fields, "assignee");
             this.creator = getSubResource(User.class, fields, "creator");

@@ -23,7 +23,7 @@ import net.rcarz.jiraclient.Field;
 
 import java.util.Map;
 
-import net.sf.json.JSONObject;
+import org.json.JSONObject;
 
 /**
  * GreenHopper estimate sum for rapid views.
@@ -39,10 +39,8 @@ public class EstimateSum {
      * @param json JSON payload
      */
     protected EstimateSum(JSONObject json) {
-        Map map = json;
-
-        value = Field.getDouble(map.get("value"));
-        text = Field.getString(map.get("text"));
+        value = Field.getDouble(json.opt("value"));
+        text = Field.getString(json.opt("text"));
     }
 
     public Double getValue() {

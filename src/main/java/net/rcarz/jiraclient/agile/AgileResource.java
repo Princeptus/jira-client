@@ -22,10 +22,8 @@ package net.rcarz.jiraclient.agile;
 import net.rcarz.jiraclient.Field;
 import net.rcarz.jiraclient.JiraException;
 import net.rcarz.jiraclient.RestClient;
-import net.sf.json.JSON;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-import org.apache.commons.lang.math.NumberUtils;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
@@ -83,7 +81,7 @@ public abstract class AgileResource {
 
         T result = null;
 
-        if (!((JSONObject) r).isNullObject()) {
+        if (r != null) {
             try {
                 Constructor<T> constructor = type.getDeclaredConstructor(RestClient.class, JSONObject.class);
                 result = constructor.newInstance(restclient, r);
@@ -113,7 +111,7 @@ public abstract class AgileResource {
 
         JSONObject jo = (JSONObject) ra;
 
-        if (!jo.containsKey(listName) || !(jo.get(listName) instanceof JSONArray)) {
+        if (!jo.has(listName) || !(jo.get(listName) instanceof JSONArray)) {
             throw new JiraException("No array found for name '" + listName + "'");
         }
 
@@ -156,9 +154,9 @@ public abstract class AgileResource {
     static <T extends AgileResource> List<T> list(
             RestClient restclient, Class<T> type, String url, String listName) throws JiraException {
 
-        JSON result;
+        JSONObject result;
         try {
-            result = restclient.get(url);
+            result = restclient.getMap(url);
         } catch (Exception ex) {
             throw new JiraException("Failed to retrieve a list of " + type.getSimpleName() + " : " + url, ex);
         }
@@ -180,9 +178,9 @@ public abstract class AgileResource {
      */
     static <T extends AgileResource> T get(RestClient restclient, Class<T> type, String url) throws JiraException {
 
-        JSON result;
+        JSONObject result;
         try {
-            result = restclient.get(url);
+            result = restclient.getMap(url);
         } catch (Exception ex) {
             throw new JiraException("Failed to retrieve " + type.getSimpleName() + " : " + url, ex);
         }
@@ -207,7 +205,7 @@ public abstract class AgileResource {
     <T extends AgileResource> List<T> getSubResourceArray(
             Class<T> type, JSONObject subJson, String resourceName) throws JiraException {
         List<T> result = null;
-        if (subJson.containsKey(resourceName)) {
+        if (subJson.has(resourceName)) {
             result = getResourceArray(type, subJson.get(resourceName), getRestclient(), resourceName + "s");
         }
         return result;
@@ -226,7 +224,7 @@ public abstract class AgileResource {
     <T extends AgileResource> T getSubResource(
             Class<T> type, JSONObject subJson, String resourceName) throws JiraException {
         T result = null;
-        if (subJson.containsKey(resourceName) && !subJson.get(resourceName).equals("null")) {
+        if (subJson.has(resourceName) && !subJson.get(resourceName).equals("null")) {
             result = getResource(type, subJson.get(resourceName), getRestclient());
         }
         return result;
@@ -274,7 +272,7 @@ public abstract class AgileResource {
      * @return The value of the attribute.
      */
     public Object getAttribute(String name) {
-        return attributes.get(name);
+        return attributes.opt(name);
     }
 
     /**
@@ -285,9 +283,9 @@ public abstract class AgileResource {
      */
     void deserialize(JSONObject json) throws JiraException {
 
-        id = getLong(json.get("id"));
-        name = Field.getString(json.get("name"));
-        self = Field.getString(json.get("self"));
+        id = getLong(json.opt("id"));
+        name = Field.getString(json.opt("name"));
+        self = Field.getString(json.opt("self"));
         addAttributes(json);
     }
 
@@ -297,14 +295,22 @@ public abstract class AgileResource {
      * @param json The json object to extract attributes from.
      */
     void addAttributes(JSONObject json) {
-        attributes.putAll(json);
+        for (String key : json.keySet()) {
+            Object value = json.get(key);
+            attributes.put(key, value);
+        }
     }
 
     long getLong(Object o) {
         if (o instanceof Integer || o instanceof Long) {
             return Field.getLong(o);
-        } else if (o instanceof String && NumberUtils.isDigits((String) o)) {
-            return NumberUtils.toLong((String) o, 0L);
+        } else if (o instanceof String) {
+        	try {
+        		return Long.valueOf((String) o);
+        	}
+        	catch (NumberFormatException exc) {
+        		return 0L;
+        	}
         } else {
             return 0L;
         }

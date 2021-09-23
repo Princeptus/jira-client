@@ -1,7 +1,6 @@
 package net.rcarz.jiraclient;
 
-import java.util.Map;
-import net.sf.json.JSONObject;
+import org.json.JSONObject;
 
 public class RemoteLink extends Resource {
     private String remoteUrl;
@@ -14,15 +13,13 @@ public class RemoteLink extends Resource {
     }
 
     private void deserialise(JSONObject json) {
-        Map map = json;
-
-        self = Field.getString(map.get("self"));
-        id = Field.getString(map.get("id"));
+        self = Field.getString(json.opt("self"));
+        id = Field.getString(json.opt("id"));
         
-        Map object = (Map)map.get("object");
+        JSONObject object = (JSONObject)json.opt("object");
         
-        remoteUrl = Field.getString(object.get("url"));
-        title = Field.getString(object.get("title"));
+        remoteUrl = Field.getString(object.opt("url"));
+        title = Field.getString(object.opt("title"));
     }
 
     public String getTitle() {

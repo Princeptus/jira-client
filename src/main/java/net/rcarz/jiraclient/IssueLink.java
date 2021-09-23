@@ -19,10 +19,7 @@
 
 package net.rcarz.jiraclient;
 
-import java.util.Map;
-
-import net.sf.json.JSON;
-import net.sf.json.JSONObject;
+import org.json.JSONObject;
 
 /**
  * Represents an issue link.
@@ -47,13 +44,11 @@ public class IssueLink extends Resource {
     }
 
     private void deserialise(JSONObject json) {
-        Map map = json;
-
-        self = Field.getString(map.get("self"));
-        id = Field.getString(map.get("id"));
-        type = Field.getResource(LinkType.class, map.get("type"), restclient);
-        outwardIssue = Field.getResource(Issue.class, map.get("outwardIssue"), restclient);
-        inwardIssue = Field.getResource(Issue.class, map.get("inwardIssue"), restclient);
+        self = Field.getString(json.opt("self"));
+        id = Field.getString(json.opt("id"));
+        type = Field.getResource(LinkType.class, json.opt("type"), restclient);
+        outwardIssue = Field.getResource(Issue.class, json.opt("outwardIssue"), restclient);
+        inwardIssue = Field.getResource(Issue.class, json.opt("inwardIssue"), restclient);
     }
 
     /**
@@ -83,18 +78,18 @@ public class IssueLink extends Resource {
     public static IssueLink get(RestClient restclient, String id)
         throws JiraException {
 
-        JSON result = null;
+        JSONObject result = null;
 
         try {
-            result = restclient.get(getBaseUri() + "issueLink/" + id);
+            result = restclient.getMap(getBaseUri() + "issueLink/" + id);
         } catch (Exception ex) {
             throw new JiraException("Failed to retrieve issue link " + id, ex);
         }
 
-        if (!(result instanceof JSONObject))
+        if (result == null)
             throw new JiraException("JSON payload is malformed");
 
-        return new IssueLink(restclient, (JSONObject)result);
+        return new IssueLink(restclient, result);
     }
 
     @Override

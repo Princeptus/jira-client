@@ -22,9 +22,10 @@ package net.rcarz.jiraclient.agile;
 import net.rcarz.jiraclient.Field;
 import net.rcarz.jiraclient.JiraException;
 import net.rcarz.jiraclient.RestClient;
-import net.sf.json.JSONObject;
 
 import java.util.List;
+
+import org.json.JSONObject;
 
 /**
  * Represents an Agile Epic.
@@ -90,9 +91,9 @@ public class Epic extends AgileResource {
     void deserialize(JSONObject json) throws JiraException {
         super.deserialize(json);
 
-        this.key = Field.getString(json.get("key"));
-        this.summary = Field.getString(json.get("summary"));
-        this.done = Field.getBoolean(json.get("done"));
+        this.key = Field.getString(json.opt("key"));
+        this.summary = Field.getString(json.opt("summary"));
+        this.done = Field.getBoolean(json.opt("done"));
     }
 
     public String getKey() {

@@ -19,15 +19,12 @@
 
 package net.rcarz.jiraclient;
 
-import net.sf.json.JSON;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Map;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 /**
  * Represents a product version.
@@ -120,7 +117,7 @@ public class Version extends Resource {
          * @throws JiraException when the create fails
          */
         public Version execute() throws JiraException {
-            JSON result = null;
+            JSONObject result = null;
 
             try {
                 result = restclient.post(getRestUri(null), req);
@@ -128,12 +125,11 @@ public class Version extends Resource {
                 throw new JiraException("Failed to create version", ex);
             }
 
-            if (!(result instanceof JSONObject) || !((JSONObject) result).containsKey("id")
-                    || !(((JSONObject) result).get("id") instanceof String)) {
+            if (result == null || !result.has("id") || !(result.get("id") instanceof String)) {
                 throw new JiraException("Unexpected result on create version");
             }
 
-            return new Version(restclient, (JSONObject) result);
+            return new Version(restclient, result);
         }
     }
 
@@ -213,18 +209,17 @@ public class Version extends Resource {
     public static Version get(RestClient restclient, String id)
             throws JiraException {
 
-        JSON result = null;
+        JSONObject result = null;
 
         try {
-            result = restclient.get(getBaseUri() + "version/" + id);
+            result = restclient.getMap(getBaseUri() + "version/" + id);
         } catch (Exception ex) {
             throw new JiraException("Failed to retrieve version " + id, ex);
         }
 
-        if (!(result instanceof JSONObject))
+        if (result == null)
             throw new JiraException("JSON payload is malformed");
-
-        return new Version(restclient, (JSONObject) result);
+        return new Version(restclient, result);
     }
     
     /**
@@ -240,39 +235,36 @@ public class Version extends Resource {
      */
     public static HashMap<String, String> getVersionIdMap(RestClient restClient, String projectKey) throws JiraException
     {
-    	JSON result = null;
+    	JSONArray result = null;
 
         try {
-            result = restClient.get(String.format("%sproject/%s/versions", getBaseUri(), projectKey));
+            result = restClient.getArray(String.format("%sproject/%s/versions", getBaseUri(), projectKey));
         } catch (Exception exc) {
             throw new JiraException(String.format("Failed to retrieve versions list for project %s.", projectKey), exc);
         }
         
         HashMap<String, String> versionIdMap = new HashMap<String, String>();
-        
-        if (result instanceof JSONArray) {
-        	JSONArray jsonArray = (JSONArray) result;
-        	for (int entryIndex = 0; entryIndex < jsonArray.size(); ++entryIndex) {
-        		JSONObject entry = jsonArray.getJSONObject(entryIndex);
-        		final String versionName = entry.getString("name");
-        		final String versionId = entry.getString("id");
-        		versionIdMap.put(versionName, versionId);
-        	}
-        }
+
+        if (result != null) {
+            for (int entryIndex = 0; entryIndex < result.length(); ++entryIndex) {
+                JSONObject entry = result.getJSONObject(entryIndex);
+                final String versionName = entry.getString("name");
+                final String versionId = entry.getString("id");
+                versionIdMap.put(versionName, versionId);
+            }
+    	}
         
         return versionIdMap;
     }
 
     private void deserialise(JSONObject json) {
-        Map map = json;
-
-        self = Field.getString(map.get("self"));
-        id = Field.getString(map.get("id"));
-        name = Field.getString(map.get("name"));
-        archived = Field.getBoolean(map.get("archived"));
-        released = Field.getBoolean(map.get("released"));
-        releaseDate = Field.getString(map.get("releaseDate"));
-        description = Field.getString(map.get("description"));
+        self = Field.getString(json.opt("self"));
+        id = Field.getString(json.opt("id"));
+        name = Field.getString(json.opt("name"));
+        archived = Field.getBoolean(json.opt("archived"));
+        released = Field.getBoolean(json.opt("released"));
+        releaseDate = Field.getString(json.opt("releaseDate"));
+        description = Field.getString(json.opt("description"));
     }
 
     @Override

@@ -19,10 +19,7 @@
 
 package net.rcarz.jiraclient;
 
-import java.util.Map;
-
-import net.sf.json.JSON;
-import net.sf.json.JSONObject;
+import org.json.JSONObject;
 
 /**
  * Represents a project category.
@@ -46,12 +43,10 @@ public class ProjectCategory extends Resource {
     }
 
     private void deserialise(JSONObject json) {
-        Map map = json;
-
-        self = Field.getString(map.get("self"));
-        id = Field.getString(map.get("id"));
-        description = Field.getString(map.get("description"));
-        name = Field.getString(map.get("name"));
+        self = Field.getString(json.opt("self"));
+        id = Field.getString(json.opt("id"));
+        description = Field.getString(json.opt("description"));
+        name = Field.getString(json.opt("name"));
     }
 
     /**
@@ -67,18 +62,17 @@ public class ProjectCategory extends Resource {
     public static ProjectCategory get(RestClient restclient, String id)
             throws JiraException {
 
-        JSON result = null;
+        JSONObject result = null;
 
         try {
-            result = restclient.get(getBaseUri() + "projectCategory/" + id);
+            result = restclient.getMap(getBaseUri() + "projectCategory/" + id);
         } catch (Exception ex) {
             throw new JiraException("Failed to retrieve status " + id, ex);
         }
 
-        if (!(result instanceof JSONObject))
+        if (result == null)
             throw new JiraException("JSON payload is malformed");
-
-        return new ProjectCategory(restclient, (JSONObject)result);
+        return new ProjectCategory(restclient, result);
     }
 
     @Override

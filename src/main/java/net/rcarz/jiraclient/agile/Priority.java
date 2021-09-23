@@ -19,9 +19,10 @@
 
 package net.rcarz.jiraclient.agile;
 
+import org.json.JSONObject;
+
 import net.rcarz.jiraclient.JiraException;
 import net.rcarz.jiraclient.RestClient;
-import net.sf.json.JSONObject;
 
 /**
  * Represents an Agile Priority.

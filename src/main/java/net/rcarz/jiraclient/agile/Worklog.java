@@ -22,9 +22,10 @@ package net.rcarz.jiraclient.agile;
 import net.rcarz.jiraclient.Field;
 import net.rcarz.jiraclient.JiraException;
 import net.rcarz.jiraclient.RestClient;
-import net.sf.json.JSONObject;
 
 import java.util.Date;
+
+import org.json.JSONObject;
 
 /**
  * Represents an Agile Worklog.
@@ -62,13 +63,13 @@ public class Worklog extends AgileResource {
     void deserialize(JSONObject json) throws JiraException {
         super.deserialize(json);
         this.author = getSubResource(User.class, json, "author");
-        this.comment = Field.getString(json.get("comment"));
-        this.created = Field.getDateTime(json.get("created"));
-        this.updated = Field.getDateTime(json.get("updated"));
+        this.comment = Field.getString(json.opt("comment"));
+        this.created = Field.getDateTime(json.opt("created"));
+        this.updated = Field.getDateTime(json.opt("updated"));
         this.updateAuthor = getSubResource(User.class, json, "updateAuthor");
-        this.started = Field.getDateTime(json.get("started"));
-        this.timeSpent = Field.getString(json.get("timeSpent"));
-        this.timeSpentSeconds = Field.getLong(json.get("timeSpentSeconds"));
+        this.started = Field.getDateTime(json.opt("started"));
+        this.timeSpent = Field.getString(json.opt("timeSpent"));
+        this.timeSpentSeconds = Field.getLong(json.opt("timeSpentSeconds"));
     }
 
     @Override

@@ -23,11 +23,9 @@ import java.net.URI;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import static net.rcarz.jiraclient.Resource.getBaseUri;
 
-import net.sf.json.JSON;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 /**
  * Represents a JIRA project.
@@ -61,25 +59,23 @@ public class Project extends Resource {
     }
 
     private void deserialise(JSONObject json) {
-        Map map = json;
-
-        self = Field.getString(map.get("self"));
-        id = Field.getString(map.get("id"));
-        avatarUrls = Field.getMap(String.class, String.class, map.get("avatarUrls"));
-        key = Field.getString(map.get("key"));
-        name = Field.getString(map.get("name"));
-        description = Field.getString(map.get("description"));
-        lead = Field.getResource(User.class, map.get("lead"), restclient);
-        assigneeType = Field.getString(map.get("assigneeType"));
-        components = Field.getResourceArray(Component.class, map.get("components"), restclient);
+        self = Field.getString(json.opt("self"));
+        id = Field.getString(json.opt("id"));
+        avatarUrls = Field.getMap(String.class, String.class, json.opt("avatarUrls"));
+        key = Field.getString(json.opt("key"));
+        name = Field.getString(json.opt("name"));
+        description = Field.getString(json.opt("description"));
+        lead = Field.getResource(User.class, json.opt("lead"), restclient);
+        assigneeType = Field.getString(json.opt("assigneeType"));
+        components = Field.getResourceArray(Component.class, json.opt("components"), restclient);
         issueTypes = Field.getResourceArray(
             IssueType.class,
-            map.containsKey("issueTypes") ? map.get("issueTypes") : map.get("issuetypes"),
+            json.has("issueTypes") ? json.opt("issueTypes") : json.opt("issuetypes"),
             restclient);
-        versions = Field.getResourceArray(Version.class, map.get("versions"), restclient);
-        roles = Field.getMap(String.class, String.class, map.get("roles"));
-        category = Field.getResource(ProjectCategory.class, map.get( "projectCategory" ), restclient);
-        email = Field.getString( map.get("email"));
+        versions = Field.getResourceArray(Version.class, json.opt("versions"), restclient);
+        roles = Field.getMap(String.class, String.class, json.opt("roles"));
+        category = Field.getResource(ProjectCategory.class, json.opt( "projectCategory" ), restclient);
+        email = Field.getString( json.opt("email"));
     }
 
     /**
@@ -95,18 +91,18 @@ public class Project extends Resource {
     public static Project get(RestClient restclient, String key)
         throws JiraException {
 
-        JSON result = null;
+        JSONObject result = null;
 
         try {
-            result = restclient.get(getBaseUri() + "project/" + key);
+            result = restclient.getMap(getBaseUri() + "project/" + key);
         } catch (Exception ex) {
             throw new JiraException("Failed to retrieve project " + key, ex);
         }
 
-        if (!(result instanceof JSONObject))
+        if (result == null)
             throw new JiraException("JSON payload is malformed");
 
-        return new Project(restclient, (JSONObject)result);
+        return new Project(restclient, result);
     }
 
     /**
@@ -119,33 +115,33 @@ public class Project extends Resource {
      * @throws JiraException when the retrieval fails
      */
     public static List<Project> getAll(RestClient restclient) throws JiraException {
-        JSON result = null;
+        JSONArray result = null;
 
         try {
-            result = restclient.get(getBaseUri() + "project");
+            result = restclient.getArray(getBaseUri() + "project");
         } catch (Exception ex) {
             throw new JiraException("Failed to retrieve projects", ex);
         }
 
-        if (!(result instanceof JSONArray))
+        if (result == null)
             throw new JiraException("JSON payload is malformed");
 
         return Field.getResourceArray(Project.class, result, restclient);
     }
 
     public List<User> getAssignableUsers() throws JiraException {
-        JSON result = null;
+    	JSONArray result = null;
 
         try {			
             Map<String, String> queryParams = new HashMap<String, String>();
             queryParams.put("project", this.key);
             URI searchUri = restclient.buildURI(getBaseUri() + "user/assignable/search", queryParams);
-            result = restclient.get(searchUri);
+            result = restclient.getArray(searchUri);
         } catch (Exception ex) {
             throw new JiraException("Failed to retrieve assignable users", ex);
         }
 
-        if (!(result instanceof JSONArray))
+        if (result == null)
             throw new JiraException("JSON payload is malformed");
 
         return Field.getResourceArray(User.class, result, restclient);

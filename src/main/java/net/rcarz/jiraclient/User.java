@@ -19,11 +19,10 @@
 
 package net.rcarz.jiraclient;
 
-import net.sf.json.JSON;
-import net.sf.json.JSONObject;
-
 import java.util.HashMap;
 import java.util.Map;
+
+import org.json.JSONObject;
 
 /**
  * Represents a JIRA user.
@@ -60,33 +59,31 @@ public class User extends Resource {
     public static User get(RestClient restclient, String username)
             throws JiraException {
 
-        JSON result = null;
+        JSONObject result = null;
 
         Map<String, String> params = new HashMap<String, String>();
         params.put("username", username);
 
         try {
-            result = restclient.get(getBaseUri() + "user", params);
+            result = restclient.getMap(getBaseUri() + "user", params);
         } catch (Exception ex) {
             throw new JiraException("Failed to retrieve user " + username, ex);
         }
 
-        if (!(result instanceof JSONObject))
+        if (result == null)
             throw new JiraException("JSON payload is malformed");
 
         return new User(restclient, (JSONObject) result);
     }
 
     private void deserialise(JSONObject json) {
-        Map map = json;
-
-        self = Field.getString(map.get("self"));
-        id = Field.getString(map.get("id"));
-        active = Field.getBoolean(map.get("active"));
-        avatarUrls = Field.getMap(String.class, String.class, map.get("avatarUrls"));
-        displayName = Field.getString(map.get("displayName"));
-        email = getEmailFromMap(map);
-        name = Field.getString(map.get("name"));
+        self = Field.getString(json.opt("self"));
+        id = Field.getString(json.opt("id"));
+        active = Field.getBoolean(json.opt("active"));
+        avatarUrls = Field.getMap(String.class, String.class, json.opt("avatarUrls"));
+        displayName = Field.getString(json.opt("displayName"));
+        email = getEmailFromMap(json);
+        name = Field.getString(json.opt("name"));
     }
 
     /**
@@ -95,11 +92,11 @@ public class User extends Resource {
      * @param map JSON object for the User
      * @return String email address of the JIRA user.
      */
-    private String getEmailFromMap(Map map) {
-        if (map.containsKey("email")) {
+    private String getEmailFromMap(JSONObject map) {
+        if (map.has("email")) {
             return Field.getString(map.get("email"));
         } else {
-            return Field.getString(map.get("emailAddress"));
+            return Field.getString(map.opt("emailAddress"));
         }
     }
 

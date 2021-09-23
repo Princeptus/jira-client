@@ -1,9 +1,8 @@
 package net.rcarz.jiraclient;
 
-import net.sf.json.JSONObject;
-import net.sf.json.JSONSerializer;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
+import org.json.JSONObject;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -48,13 +47,13 @@ public class TransitionTest {
     @Test
     public void testGetFields() throws Exception {
         Transition transition = new Transition(new RestClient(null, new URI("/123/asd")), getTestJson());
-        final Map fields = transition.getFields();
-        Assert.assertEquals(2,fields.size());
+        final JSONObject fields = transition.getFields();
+        Assert.assertEquals(2,fields.length());
 
     }
 
     public static JSONObject getTestJson() {
-        JSONObject jsonObject = (JSONObject) JSONSerializer.toJSON(
+        JSONObject jsonObject = new JSONObject(
                 "{\n" +
                         "  \"id\": \"21\",\n" +
                         "  \"name\": \"Done\",\n" +

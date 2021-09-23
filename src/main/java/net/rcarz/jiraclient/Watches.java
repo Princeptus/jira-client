@@ -19,19 +19,15 @@
 
 package net.rcarz.jiraclient;
 
-import net.sf.json.JSON;
-import net.sf.json.JSONObject;
-
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
+import org.json.JSONObject;
 
 /**
  * Represents issue watches.
  */
 public class Watches extends Resource {
 
-    private String name = null;
     private int watchCount = 0;
     private boolean isWatching = false;
     private List<User> watchers = new ArrayList<User>();
@@ -50,13 +46,11 @@ public class Watches extends Resource {
     }
 
     private void deserialise(JSONObject json) {
-        Map map = json;
-
-        self = Field.getString(map.get("self"));
-        id = Field.getString(map.get("id"));
-        watchCount = Field.getInteger(map.get("watchCount"));
-        isWatching = Field.getBoolean(map.get("isWatching"));
-        watchers = Field.getResourceArray(User.class, map.get("watchers"), null);
+        self = Field.getString(json.opt("self"));
+        id = Field.getString(json.opt("id"));
+        watchCount = Field.getInteger(json.opt("watchCount"));
+        isWatching = Field.getBoolean(json.opt("isWatching"));
+        watchers = Field.getResourceArray(User.class, json.opt("watchers"), null);
     }
 
     /**
@@ -72,18 +66,18 @@ public class Watches extends Resource {
     public static Watches get(RestClient restclient, String issue)
         throws JiraException {
 
-        JSON result = null;
+        JSONObject result = null;
 
         try {
-            result = restclient.get(getBaseUri() + "issue/" + issue + "/watchers");
+            result = restclient.getMap(getBaseUri() + "issue/" + issue + "/watchers");
         } catch (Exception ex) {
             throw new JiraException("Failed to retrieve watches for issue " + issue, ex);
         }
 
-        if (!(result instanceof JSONObject))
+        if (result == null)
             throw new JiraException("JSON payload is malformed");
 
-        return new Watches(restclient, (JSONObject)result);
+        return new Watches(restclient, result);
     }
 
     @Override
