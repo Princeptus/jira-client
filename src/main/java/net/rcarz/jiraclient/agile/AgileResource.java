@@ -224,7 +224,7 @@ public abstract class AgileResource {
     <T extends AgileResource> T getSubResource(
             Class<T> type, JSONObject subJson, String resourceName) throws JiraException {
         T result = null;
-        if (subJson.has(resourceName) && !subJson.get(resourceName).equals("null")) {
+        if (subJson.has(resourceName) && !subJson.isNull(resourceName)) {
             result = getResource(type, subJson.get(resourceName), getRestclient());
         }
         return result;
