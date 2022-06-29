@@ -92,11 +92,11 @@ public class TimeTracking {
     }
 
     public int getOriginalEstimateSeconds() {
-        return originalEstimateSeconds;
+        return originalEstimateSeconds != null ? originalEstimateSeconds : 0;
     }
 
     public int getRemainingEstimateSeconds() {
-        return remainingEstimateSeconds;
+        return remainingEstimateSeconds != null ? remainingEstimateSeconds : 0;
     }
 
     public void setOriginalEstimate(String originalEstimate) {
@@ -116,7 +116,7 @@ public class TimeTracking {
     }
 
     public int getTimeSpentSeconds() {
-        return timeSpentSeconds;
+        return timeSpentSeconds != null ? timeSpentSeconds : 0;
     }
     
     public void setTimeSpent(String timeSpent) {
